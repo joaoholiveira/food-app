@@ -1,0 +1,947 @@
+<!DOCTYPE html>
+<html lang="pt-br">
+
+<head>
+    <meta charset="UTF-8">
+    <title>App Alimentação Pro</title>
+
+    <style>
+        body {
+            font-family: Arial, sans-serif;
+            background: #f4f6f8;
+            margin: 0;
+            padding: 20px;
+        }
+
+        .container {
+            max-width: 1100px;
+            margin: auto;
+        }
+
+        h1 {
+            text-align: center;
+        }
+
+        .dashboard {
+            display: grid;
+            grid-template-columns: repeat(7, 1fr);
+            gap: 10px;
+            margin-bottom: 20px;
+        }
+
+        .cardDash {
+            background: white;
+            padding: 12px;
+            border-radius: 10px;
+            text-align: center;
+            box-shadow: 0 2px 8px rgba(0, 0, 0, 0.1);
+        }
+
+        form {
+            background: white;
+            padding: 15px;
+            border-radius: 10px;
+            display: grid;
+            gap: 10px;
+            box-shadow: 0 2px 10px rgba(0, 0, 0, 0.1);
+        }
+
+        .grid {
+            display: grid;
+            grid-template-columns: repeat(2, 1fr);
+            gap: 10px;
+        }
+
+        select,
+        input,
+        textarea {
+            padding: 10px;
+            border-radius: 6px;
+            border: 1px solid #ddd;
+        }
+
+        button {
+            padding: 10px;
+            border: none;
+            background: #2d6cdf;
+            color: white;
+            border-radius: 6px;
+            cursor: pointer;
+        }
+
+        button:hover {
+            background: #1f56b3;
+        }
+
+        .card {
+            background: white;
+            margin-top: 15px;
+            padding: 15px;
+            border-radius: 10px;
+            box-shadow: 0 2px 8px rgba(0, 0, 0, 0.1);
+        }
+
+        .delete-btn {
+            margin-top: 10px;
+            padding: 8px 10px;
+            background: #e74c3c;
+            border: none;
+            color: white;
+            border-radius: 6px;
+            cursor: pointer;
+            font-size: 13px;
+        }
+
+        .delete-btn:hover {
+            background: #c0392b;
+        }
+
+        .small-btn {
+            margin-top: 5px;
+            padding: 5px 8px;
+            font-size: 12px;
+            background: #e74c3c;
+            color: white;
+            border: none;
+            border-radius: 5px;
+            cursor: pointer;
+        }
+
+        .item-row {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin: 5px 0;
+            padding: 5px;
+            background: #f8f8f8;
+            border-radius: 5px;
+        }
+
+        .catalog-section {
+
+            margin-top: 25px;
+
+            background: white;
+
+            border-radius: 12px;
+
+            padding: 15px;
+
+            box-shadow: 0 3px 10px rgba(0, 0, 0, .08);
+
+        }
+
+        .catalog-section summary {
+
+            font-size: 28px;
+
+            font-weight: bold;
+
+            cursor: pointer;
+
+            user-select: none;
+
+            list-style: none;
+
+        }
+
+        .catalog-section summary::-webkit-details-marker {
+
+            display: none;
+
+        }
+
+        .catalog-section summary::after {
+
+            content: "▼";
+
+            float: right;
+
+            transition: .2s;
+
+        }
+
+        .catalog-section[open] summary::after {
+
+            content: "▲";
+
+        }
+
+        label {
+            display: block;
+            margin-bottom: 6px;
+            font-size: 14px;
+            color: #444;
+        }
+
+        .grid>div {
+            display: flex;
+            flex-direction: column;
+        }
+    </style>
+</head>
+
+<body>
+
+    <div class="container">
+
+        <h1>🍽️ App Alimentação Pro</h1>
+
+        <!-- DASHBOARD -->
+        <div class="dashboard">
+            <div class="cardDash">
+                <h3>🔥 Muito boa</h3>
+                <p id="muitoBoa">0</p>
+            </div>
+            <div class="cardDash">
+                <h3>✅ Boa</h3>
+                <p id="boa">0</p>
+            </div>
+            <div class="cardDash">
+                <h3>⚖️ Intermediária</h3>
+                <p id="intermediaria">0</p>
+            </div>
+            <div class="cardDash">
+                <h3>🔶 Pode melhorar</h3>
+                <p id="podeMelhorar">0</p>
+            </div>
+            <div class="cardDash">
+                <h3>🍔 Livre</h3>
+                <p id="livre">0</p>
+            </div>
+
+            <div class="cardDash">
+                <h3>📊 80/20</h3>
+                <p id="score8020">0%</p>
+            </div>
+            <div class="cardDash">
+                <h3>📅 Hoje</h3>
+                <p id="todayStatus">-</p>
+            </div>
+        </div>
+
+        <h2>💾 Backup e Sincronização</h2>
+
+        <div class="card">
+
+            <p>
+                Exporte seus dados para fazer backup ou importe um arquivo salvo anteriormente.
+            </p>
+
+            <div class="grid">
+
+                <button type="button" onclick="exportDatabase()">
+                    ⬇️ Exportar Backup
+                </button>
+
+                <button type="button" onclick="document.getElementById('backupFile').click()">
+                    ⬆️ Importar Backup
+                </button>
+
+                <button type="button" style="background:#e74c3c" onclick="resetDatabase()">
+                    🗑️ Resetar Banco de Dados
+                </button>
+
+            </div>
+
+            <input type="file" id="backupFile" accept=".json" style="display:none" onchange="importDatabase(event)">
+
+        </div>
+
+        <!-- CADASTRO -->
+        <h2>🍱 Cadastro de Alimentos</h2>
+
+        <form id="catalogForm">
+            <div class="grid">
+                <input id="base" placeholder="Base (Arroz e Feijão, Banana)">
+                <input id="protein" placeholder="Proteína (Frango, Carne, Ovos, Pasta de amendoim)">
+            </div>
+
+            <div class="grid">
+                <input id="carb" placeholder="Carboidrato (Macarrão, Batata)">
+                <input id="freeMeal" placeholder="Refeição livre (Pizza, Hambúrguer)">
+            </div>
+
+            <button>Salvar alimentos</button>
+        </form>
+
+        <!-- GERENCIAR CATALOGO -->
+        <details class="catalog-section">
+
+            <summary>
+                🧠 Gerenciar Catálogo
+            </summary>
+
+            <div class="grid">
+
+                <div class="card">
+                    <h3>Bases</h3>
+                    <div id="listBases"></div>
+                </div>
+
+                <div class="card">
+                    <h3>Proteínas</h3>
+                    <div id="listProteins"></div>
+                </div>
+
+                <div class="card">
+
+                    <h3>Carboidratos</h3>
+
+                    <div id="listCarbs"></div>
+
+                </div>
+
+                <div class="card">
+                    <h3>Livres</h3>
+                    <div id="listFree"></div>
+                </div>
+
+            </div>
+
+        </details>
+
+        <!-- REFEIÇÃO -->
+        <h2>➕ Registrar Refeição</h2>
+
+        <form id="mealForm">
+
+            <label for="date"><strong>📅 Data da refeição</strong></label>
+            <input type="date" id="date">
+
+            <label for="mealType"><strong>🍽️ Tipo da refeição</strong></label>
+            <select id="mealType">
+                <option value="cafeManha">Café da manhã</option>
+                <option value="almoco">Almoço</option>
+                <option value="cafeTarde">Café da tarde</option>
+                <option value="jantar">Jantar</option>
+                <option value="lanche">Lanche / Extra</option>
+            </select>
+
+            <div class="grid">
+
+                <div>
+                    <label for="baseSelect"><strong>🍚 Base</strong></label>
+                    <select id="baseSelect"></select>
+                </div>
+
+                <div>
+                    <label for="proteinSelect"><strong>🥩 Proteína</strong></label>
+                    <select id="proteinSelect"></select>
+                </div>
+
+            </div>
+
+            <div class="grid">
+
+                <div>
+                    <label for="carbSelect"><strong>🍝 Carboidrato</strong></label>
+                    <select id="carbSelect"></select>
+                </div>
+
+                <div>
+                    <label for="freeSelect"><strong>🍔 Refeição livre</strong></label>
+                    <select id="freeSelect"></select>
+                </div>
+
+            </div>
+
+            <label for="hasSide"><strong>🥗 Ingeriu salada ou legumes?</strong></label>
+            <select id="hasSide">
+                <option value="">Selecione...</option>
+                <option value="sim">Sim 🥗</option>
+                <option value="nao">Não ❌</option>
+            </select>
+
+            <label for="hasSide"><strong>🥤 Ingeriu alguma bebida?</strong></label>
+            <select id="beverage">
+                <option value="">— Bebida —</option>
+                <option value="agua">💧 Água</option>
+                <option value="cafe">☕ Café</option>
+                <option value="cha">🍵 Chá</option>
+                <option value="suco">🧃 Suco</option>
+                <option value="refrigeranteZero">🥤 Refrigerante Zero</option>
+                <option value="refrigerante">🥤 Refrigerante</option>
+                <option value="energetico">⚡ Energético</option>
+                <option value="outro">🥛 Outro</option>
+            </select>
+
+            <label for="classification"><strong>⭐ Como você avalia essa refeição?</strong></label>
+            <select id="classification">
+                <option value="muitoBoa">🔥 Muito boa</option>
+                <option value="boa">✅ Boa</option>
+                <option value="intermediaria">⚖️ Intermediária</option>
+                <option value="podeMelhorar">🔶 Pode melhorar</option>
+                <option value="livre">🍔 Livre</option>
+            </select>
+
+            <label for="notes"><strong>📝 Observações</strong></label>
+            <textarea id="notes" placeholder="Ex.: Almoço fora de casa, pouca fome, etc."></textarea>
+
+            <button>💾 Salvar refeição</button>
+
+        </form>
+
+        <h2>📊 Refeições do mês</h2>
+        <div id="list"></div>
+
+    </div>
+
+    <script>
+        // ================= PAGINAÇÃO =================
+
+        const ITEMS_PER_PAGE = 5;
+
+        let currentPage = 1;
+
+        let allMeals = [];
+        // ================= DB =================
+        let db;
+
+        const request = indexedDB.open("foodDB", 5);
+
+        request.onupgradeneeded = function (e) {
+            db = e.target.result;
+
+            ["meals", "bases", "proteins", "carbs", "freeMeals"].forEach(s => {
+                if (!db.objectStoreNames.contains(s)) {
+                    db.createObjectStore(s, { keyPath: "id", autoIncrement: true });
+                }
+            });
+        };
+
+        request.onsuccess = function (e) {
+            db = e.target.result;
+
+            setDefaultDate();
+            loadCatalog();
+            loadMeals();
+        };
+
+        // ================= SCORE =================
+        const scoreMap = {
+            muitoBoa: 1,
+            boa: 0.75,
+            intermediaria: 0.5,
+            podeMelhorar: 0.25,
+            livre: 0
+        };
+
+        // ================= DATA =================
+        function setDefaultDate() {
+            document.getElementById("date").value =
+                new Date().toISOString().split("T")[0];
+        }
+
+        // ================= CATALOG =================
+        document.getElementById("catalogForm").addEventListener("submit", e => {
+            e.preventDefault();
+
+            addItem("bases", base.value);
+            addItem("proteins", protein.value);
+            addItem("carbs", carb.value);
+            addItem("freeMeals", freeMeal.value);
+
+            e.target.reset();
+            setTimeout(loadCatalog, 200);
+        });
+
+        function addItem(store, value) {
+            if (!value) return;
+
+            const tx = db.transaction(store, "readwrite");
+            tx.objectStore(store).add({ name: value });
+        }
+
+        // ================= LOAD CATALOG =================
+        function loadCatalog() {
+
+            fill("bases", "baseSelect");
+            fill("proteins", "proteinSelect");
+            fill("carbs", "carbSelect");
+            fill("freeMeals", "freeSelect");
+
+            renderCatalogList("bases", "listBases");
+            renderCatalogList("proteins", "listProteins");
+            renderCatalogList("carbs", "listCarbs");
+            renderCatalogList("freeMeals", "listFree");
+
+        }
+
+        function fill(storeName, selectId) {
+            const tx = db.transaction(storeName, "readonly");
+            const store = tx.objectStore(storeName);
+
+            const items = [];
+
+            store.openCursor().onsuccess = e => {
+                const cursor = e.target.result;
+
+                if (cursor) {
+                    items.push(cursor.value.name);
+                    cursor.continue();
+                } else {
+                    const sel = document.getElementById(selectId);
+                    sel.innerHTML = "";
+
+                    const empty = document.createElement("option");
+                    empty.value = "";
+                    empty.textContent = "— Nenhum —";
+                    sel.appendChild(empty);
+
+                    items.forEach(i => {
+                        const opt = document.createElement("option");
+                        opt.value = i;
+                        opt.textContent = i;
+                        sel.appendChild(opt);
+                    });
+                }
+            };
+        }
+
+        // ================= DELETE CATALOG =================
+        function deleteCatalogItem(store, id) {
+            const tx = db.transaction(store, "readwrite");
+            tx.objectStore(store).delete(id);
+            tx.oncomplete = loadCatalog;
+        }
+
+        // ================= RENDER CATALOG =================
+        function renderCatalogList(storeName, elementId) {
+            const tx = db.transaction(storeName, "readonly");
+            const store = tx.objectStore(storeName);
+
+            const container = document.getElementById(elementId);
+            container.innerHTML = "";
+
+            store.openCursor().onsuccess = e => {
+                const cursor = e.target.result;
+
+                if (cursor) {
+                    const item = cursor.value;
+
+                    const div = document.createElement("div");
+                    div.className = "item-row";
+
+                    div.innerHTML = `
+                <span>${item.name}</span>
+                <button class="small-btn"
+                    onclick="deleteCatalogItem('${storeName}', ${item.id})">
+                    🗑️
+                </button>
+            `;
+
+                    container.appendChild(div);
+
+                    cursor.continue();
+                }
+            };
+        }
+
+        // ================= SAVE MEAL =================
+        document.getElementById("mealForm").addEventListener("submit", e => {
+            e.preventDefault();
+
+            const meal = {
+                date: date.value,
+                type: mealType.value,
+                base: baseSelect.value || null,
+                protein: proteinSelect.value || null,
+                carb: carbSelect.value || null,
+                hasSide: hasSide.value || null,
+                beverage: beverage.value || null,
+                freeMeal: freeSelect.value || null,
+                classification: classification.value,
+                notes: notes.value
+            };
+
+            const tx = db.transaction("meals", "readwrite");
+            tx.objectStore("meals").add(meal);
+
+            tx.oncomplete = loadMeals;
+
+            e.target.reset();
+            setDefaultDate();
+        });
+
+        // ================= LOAD MEALS =================
+        function loadMeals() {
+            const tx = db.transaction("meals", "readonly");
+            const store = tx.objectStore("meals");
+
+            const meals = [];
+
+            store.openCursor().onsuccess = e => {
+                const cursor = e.target.result;
+
+                if (cursor) {
+                    meals.push(cursor.value);
+                    cursor.continue();
+                } else {
+                    allMeals = meals;
+
+                    render();
+                    dashboard(meals);
+                }
+            };
+        }
+
+        // ================= DELETE MEAL =================
+        function deleteMeal(id) {
+            const tx = db.transaction("meals", "readwrite");
+            tx.objectStore("meals").delete(id);
+            tx.oncomplete = loadMeals;
+        }
+
+        // ================= FORMATAÇÃO =================
+
+        function formatDate(date) {
+            if (!date) return "";
+
+            const [year, month, day] = date.split("-");
+            return `${day}/${month}/${year}`;
+        }
+
+        function formatMealType(type) {
+
+            const meals = {
+                cafeManha: "☕ Café da Manhã",
+                almoco: "🍽️ Almoço",
+                cafeTarde: "🥪 Café da Tarde",
+                jantar: "🌙 Jantar",
+                lanche: "🍎 Lanche / Extra"
+            };
+
+            return meals[type] || type;
+        }
+
+        function formatClassification(value) {
+
+            const map = {
+                muitoBoa: "🔥 Muito Boa",
+                boa: "✅ Boa",
+                intermediaria: "⚖️ Intermediária",
+                podeMelhorar: "🟠 Pode Melhorar",
+                livre: "🍔 Livre"
+            };
+
+            return map[value] || value;
+        }
+
+
+        // ================= RENDER MEALS =================
+        function render() {
+
+            const list = document.getElementById("list");
+
+            list.innerHTML = "";
+
+            const meals = [...allMeals]
+                .sort((a, b) => new Date(b.date) - new Date(a.date));
+
+            const start = (currentPage - 1) * ITEMS_PER_PAGE;
+
+            const end = start + ITEMS_PER_PAGE;
+
+            const pageMeals = meals.slice(start, end);
+
+            pageMeals.forEach(m => {
+
+                const div = document.createElement("div");
+                div.className = "card";
+
+                div.innerHTML = `
+
+                    <h3>${formatMealType(m.type)}</h3>
+
+                    <p>📅 ${formatDate(m.date)}</p>
+
+                    <hr>
+
+                    ${m.base ? `<p><strong>🍚 Base:</strong> ${m.base}</p>` : ""}
+
+                    ${m.protein ? `<p><strong>🥩 Proteína:</strong> ${m.protein}</p>` : ""}
+
+                    ${m.carb ? `<p><strong>🍝 Carboidrato:</strong> ${m.carb}</p>` : ""}
+
+                    ${m.hasSide ? `<p><strong>🥗 Salada/Legumes:</strong> ${m.hasSide === "sim" ? "Sim" : "Não"}</p>` : ""}
+
+                    ${m.freeMeal ? `<p><strong>🍔 Refeição Livre:</strong> ${m.freeMeal}</p>` : ""}
+
+                    <p><strong>⭐ Classificação:</strong> ${formatClassification(m.classification)}</p>
+
+                    ${m.notes ? `<p><strong>📝 Observações:</strong><br>${m.notes}</p>` : ""}
+
+                    <button class="delete-btn"
+                        onclick="deleteMeal(${m.id})">
+                        🗑️ Excluir refeição
+                    </button>
+
+                `;
+
+                list.appendChild(div);
+            });
+
+            renderPagination(meals.length);
+
+        }
+
+        // ================= DASHBOARD =================
+        function dashboard(meals) {
+
+            const counts = {
+                muitoBoa: 0,
+                boa: 0,
+                intermediaria: 0,
+                podeMelhorar: 0,
+                livre: 0
+            };
+
+            let total = 0;
+            let count = 0;
+
+            const today = new Date().toISOString().split("T")[0];
+
+            let todayTotal = 0;
+            let todayCount = 0;
+
+            meals.forEach(m => {
+                const d = new Date(m.date);
+
+                if (d.getMonth() === new Date().getMonth()) {
+                    counts[m.classification]++;
+                    total += scoreMap[m.classification] || 0;
+                    count++;
+                }
+
+                if (m.date === today) {
+                    todayTotal += scoreMap[m.classification] || 0;
+                    todayCount++;
+                }
+            });
+
+            for (let k in counts) {
+                document.getElementById(k).innerText = counts[k];
+            }
+
+            const avg = count ? (total / count) : 0;
+            document.getElementById("score8020").innerText =
+                Math.round(avg * 100) + "%";
+
+            let todayAvg = todayCount ? (todayTotal / todayCount) : 0;
+
+            let status = "-";
+            if (todayCount) {
+                if (todayAvg >= 0.75) status = "Saudável 🔥";
+                else if (todayAvg >= 0.5) status = "Intermediário ⚖️";
+                else status = "Ruim 🍔";
+            }
+
+            document.getElementById("todayStatus").innerText = status;
+        }
+
+
+        // ================= EXPORTAR BANCO =================
+
+        async function exportDatabase() {
+
+            const stores = ["bases", "proteins", "carbs", "freeMeals", "meals"];
+
+            const backup = {
+                version: 1,
+                exportDate: new Date().toISOString()
+            };
+
+            for (const storeName of stores) {
+                backup[storeName] = await getAll(storeName);
+            }
+
+            const json = JSON.stringify(backup, null, 2);
+
+            const blob = new Blob([json], {
+                type: "application/json"
+            });
+
+            const url = URL.createObjectURL(blob);
+
+            const a = document.createElement("a");
+
+            const today = new Date().toISOString().split("T")[0];
+
+            a.href = url;
+            a.download = `alimentacao_backup_${today}.json`;
+
+            a.click();
+
+            URL.revokeObjectURL(url);
+
+        }
+
+        // ================= LER STORE =================
+
+        function getAll(storeName) {
+
+            return new Promise((resolve, reject) => {
+
+                const tx = db.transaction(storeName, "readonly");
+
+                const request = tx.objectStore(storeName).getAll();
+
+                request.onsuccess = () => resolve(request.result);
+
+                request.onerror = () => reject(request.error);
+
+            });
+
+        }
+
+        // ================= IMPORTAR =================
+
+        async function importDatabase(event) {
+
+            const file = event.target.files[0];
+
+            if (!file) return;
+
+            if (!confirm("Todos os dados atuais serão substituídos.\n\nDeseja continuar?"))
+                return;
+
+            const text = await file.text();
+
+            const backup = JSON.parse(text);
+
+            await clearDatabase();
+
+            await restoreStore("bases", backup.bases || []);
+            await restoreStore("proteins", backup.proteins || []);
+            await restoreStore("carbs", backup.carbs || []);
+            await restoreStore("freeMeals", backup.freeMeals || []);
+            await restoreStore("meals", backup.meals || []);
+
+            alert("Backup restaurado com sucesso!");
+
+            loadCatalog();
+            loadMeals();
+
+        }
+
+        // ================= LIMPAR BANCO =================
+
+        function clearStore(storeName) {
+
+            return new Promise((resolve) => {
+
+                const tx = db.transaction(storeName, "readwrite");
+
+                tx.objectStore(storeName).clear();
+
+                tx.oncomplete = () => resolve();
+
+            });
+
+        }
+
+        async function clearDatabase() {
+
+            await clearStore("bases");
+            await clearStore("proteins");
+            await clearStore("carbs");
+            await clearStore("freeMeals");
+            await clearStore("meals");
+
+        }
+
+        // ================= RESTAURAR =================
+
+        function restoreStore(storeName, data) {
+
+            return new Promise((resolve) => {
+
+                const tx = db.transaction(storeName, "readwrite");
+
+                const store = tx.objectStore(storeName);
+
+                data.forEach(item => store.put(item));
+
+                tx.oncomplete = () => resolve();
+
+            });
+
+        }
+
+        // ================= RESETAR BANCO =================
+
+        async function resetDatabase() {
+
+            const confirmacao1 = confirm(
+                "⚠️ ATENÇÃO!\n\nTodos os dados cadastrados serão apagados.\n\nDeseja continuar?"
+            );
+
+            if (!confirmacao1) return;
+
+            const confirmacao2 = confirm(
+                "Esta ação NÃO pode ser desfeita.\n\nTem certeza absoluta?"
+            );
+
+            if (!confirmacao2) return;
+
+            await clearDatabase();
+
+            loadCatalog();
+            loadMeals();
+
+            alert("✅ Banco de dados limpo com sucesso!");
+
+        }
+
+        function renderPagination(totalItems) {
+
+            const totalPages = Math.ceil(totalItems / ITEMS_PER_PAGE);
+
+            if (totalPages <= 1) return;
+
+            const div = document.createElement("div");
+
+            div.style.display = "flex";
+            div.style.justifyContent = "center";
+            div.style.alignItems = "center";
+            div.style.gap = "20px";
+            div.style.marginTop = "20px";
+
+            div.innerHTML = `
+
+        <button
+            ${currentPage == 1 ? "disabled" : ""}
+            onclick="changePage(-1)">
+            ◀ Anterior
+        </button>
+
+        <strong>
+            Página ${currentPage} de ${totalPages}
+        </strong>
+
+        <button
+            ${currentPage == totalPages ? "disabled" : ""}
+            onclick="changePage(1)">
+            Próxima ▶
+        </button>
+
+    `;
+
+            document.getElementById("list").appendChild(div);
+
+        }
+
+
+        function changePage(step) {
+
+            currentPage += step;
+
+            render();
+
+        }
+    </script>
+
+</body>
+
+</html>
