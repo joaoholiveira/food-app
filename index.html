@@ -4,7 +4,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
-    <title>App Alimentação Pro</title>
+    <title>🍽️ Gerenciador Alimentação</title>
 
     <style>
         * {
@@ -25,10 +25,199 @@
             width: 100%;
         }
 
+        .page-header {
+            display: none;
+        }
+
         h1 {
-            text-align: center;
-            margin-bottom: 16px;
+            text-align: left;
+            margin: 0;
             font-size: clamp(1.4rem, 4vw, 2rem);
+        }
+
+        .settings-btn {
+            display: inline-flex;
+            align-items: center;
+            justify-content: center;
+            width: 44px;
+            height: 44px;
+            border: 1px solid #d0d7de;
+            border-radius: 50%;
+            background: white;
+            color: #2d6cdf;
+            font-size: 20px;
+            cursor: pointer;
+            box-shadow: 0 2px 6px rgba(0, 0, 0, 0.08);
+        }
+
+        .settings-btn:hover {
+            background: #f2f6ff;
+        }
+
+        .catalog-actions {
+            display: flex;
+            flex-direction: column;
+            gap: 8px;
+            margin-top: 10px;
+        }
+
+        .catalog-actions p {
+            margin: 0;
+            color: #64748b;
+            font-size: 14px;
+        }
+
+        .catalog-btn {
+            width: fit-content;
+            padding: 10px 14px;
+            min-height: 42px;
+            background: #f8fafc;
+            color: #2d6cdf;
+            border: 1px solid #dbeafe;
+        }
+
+        .catalog-btn:hover {
+            background: #eef4ff;
+        }
+
+        .hero-card {
+            background: linear-gradient(135deg, #2d6cdf 0%, #4f8ef7 100%);
+            border-radius: 22px;
+            padding: 20px;
+            color: white;
+            box-shadow: 0 16px 40px rgba(45, 108, 223, 0.22);
+            margin-bottom: 18px;
+        }
+
+        .hero-card h1 {
+            color: white;
+            margin-bottom: 8px;
+        }
+
+        .hero-copy p {
+            margin: 0 0 12px;
+            opacity: 0.95;
+            font-size: 15px;
+        }
+
+        .hero-actions {
+            display: flex;
+            flex-wrap: wrap;
+            gap: 10px;
+            margin-top: 12px;
+        }
+
+        .hero-actions button {
+            background: rgba(255, 255, 255, 0.16);
+            border: 1px solid rgba(255, 255, 255, 0.3);
+            backdrop-filter: blur(6px);
+            min-height: 42px;
+            padding: 10px 14px;
+        }
+
+        .hero-actions button:hover {
+            background: rgba(255, 255, 255, 0.24);
+        }
+
+        .nav-pills {
+            display: flex;
+            flex-wrap: wrap;
+            gap: 8px;
+            margin-top: 10px;
+        }
+
+        .nav-pill {
+            background: rgba(255, 255, 255, 0.16);
+            color: white;
+            border: 1px solid rgba(255, 255, 255, 0.25);
+            border-radius: 999px;
+            padding: 8px 12px;
+            min-height: 38px;
+            font-size: 14px;
+        }
+
+        .section-card {
+            background: white;
+            border-radius: 18px;
+            padding: 18px;
+            box-shadow: 0 10px 25px rgba(15, 23, 42, 0.06);
+            margin-bottom: 16px;
+        }
+
+        .section-heading {
+            display: flex;
+            align-items: flex-start;
+            justify-content: space-between;
+            gap: 10px;
+            margin-bottom: 12px;
+        }
+
+        .section-heading h2 {
+            margin: 0;
+            font-size: 1.2rem;
+        }
+
+        .section-heading span {
+            display: block;
+            font-size: 14px;
+            color: #64748b;
+            margin-top: 3px;
+        }
+
+        .stats-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(140px, 1fr));
+            gap: 10px;
+            margin-bottom: 10px;
+        }
+
+        .stat-chip {
+            background: #f8fafc;
+            border: 1px solid #e2e8f0;
+            border-radius: 12px;
+            padding: 10px 12px;
+        }
+
+        .stat-chip strong {
+            display: block;
+            font-size: 1.05rem;
+            color: #0f172a;
+        }
+
+        .stat-chip span {
+            font-size: 13px;
+            color: #64748b;
+        }
+
+        .dashboard-toggle {
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+            width: 100%;
+            background: transparent;
+            color: inherit;
+            border: none;
+            padding: 0;
+            min-height: auto;
+            font-size: inherit;
+        }
+
+        .dashboard-toggle:hover {
+            background: transparent;
+        }
+
+        .dashboard-toggle .toggle-icon {
+            transition: transform 0.2s ease;
+            font-size: 18px;
+        }
+
+        .dashboard-panel {
+            display: none;
+            margin-top: 12px;
+        }
+
+        .dashboard-panel.open {
+            display: block;
         }
 
         .dashboard {
@@ -103,13 +292,14 @@
 
         .delete-btn {
             margin-top: 10px;
-            padding: 8px 10px;
+            padding: 8px 12px;
             background: #e74c3c;
             border: none;
             color: white;
-            border-radius: 6px;
+            border-radius: 8px;
             cursor: pointer;
-            font-size: 13px;
+            font-size: 14px;
+            min-height: 40px;
         }
 
         .delete-btn:hover {
@@ -117,14 +307,23 @@
         }
 
         .small-btn {
-            margin-top: 5px;
-            padding: 5px 8px;
-            font-size: 12px;
-            background: #e74c3c;
+            margin-top: 0;
+            padding: 6px 8px;
+            font-size: 13px;
+            line-height: 1;
+            min-width: 32px;
+            min-height: 32px;
+            background: #ef5350;
             color: white;
             border: none;
-            border-radius: 5px;
+            border-radius: 999px;
             cursor: pointer;
+            transition: transform 0.2s ease, background 0.2s ease;
+        }
+
+        .small-btn:hover {
+            background: #d64545;
+            transform: translateY(-1px);
         }
 
         .item-row {
@@ -134,8 +333,13 @@
             margin: 5px 0;
             padding: 8px;
             background: #f8f8f8;
-            border-radius: 6px;
+            border-radius: 8px;
             gap: 10px;
+        }
+
+        .item-row span {
+            flex: 1;
+            overflow-wrap: anywhere;
         }
 
         .catalog-section {
@@ -180,9 +384,184 @@
             flex-direction: column;
         }
 
+        .modal {
+            position: fixed;
+            inset: 0;
+            background: rgba(15, 23, 42, 0.5);
+            display: none;
+            align-items: center;
+            justify-content: center;
+            padding: 16px;
+            z-index: 1000;
+        }
+
+        .modal.open {
+            display: flex;
+        }
+
+        .modal-content {
+            width: min(100%, 480px);
+            background: white;
+            border-radius: 14px;
+            padding: 16px;
+            box-shadow: 0 10px 30px rgba(0, 0, 0, 0.2);
+        }
+
+        .modal-content.catalog-modal {
+            width: min(100%, 680px);
+            max-height: min(88vh, 760px);
+            display: flex;
+            flex-direction: column;
+            overflow: hidden;
+        }
+
+        .catalog-tabs {
+            display: flex;
+            flex-wrap: wrap;
+            gap: 8px;
+            margin: 8px 0 10px;
+        }
+
+        .tab-btn {
+            padding: 8px 12px;
+            min-height: 40px;
+            border-radius: 999px;
+            background: #f3f6fb;
+            color: #475569;
+            font-size: 14px;
+        }
+
+        .tab-btn.active {
+            background: #2d6cdf;
+            color: white;
+        }
+
+        .catalog-modal-body {
+            display: flex;
+            flex-direction: column;
+            gap: 10px;
+            overflow: hidden;
+        }
+
+        .catalog-list {
+            display: flex;
+            flex-direction: column;
+            gap: 8px;
+            overflow: auto;
+            padding-right: 4px;
+        }
+
+        .catalog-item {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            padding: 10px 12px;
+            background: #f8fafc;
+            border-radius: 10px;
+            gap: 10px;
+        }
+
+        .catalog-item span {
+            flex: 1;
+            overflow-wrap: anywhere;
+        }
+
+        .empty-state {
+            text-align: center;
+            padding: 18px;
+            border-radius: 10px;
+            background: #f8fafc;
+            color: #64748b;
+        }
+
+        .pagination {
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            flex-wrap: wrap;
+            gap: 8px;
+            margin-top: 4px;
+        }
+
+        .pagination button {
+            min-width: 92px;
+            padding: 8px 10px;
+            min-height: 40px;
+        }
+
+        .pagination strong {
+            font-size: 14px;
+            color: #334155;
+        }
+
+        .modal-header {
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+            gap: 10px;
+            margin-bottom: 8px;
+        }
+
+        .modal-close {
+            border: none;
+            background: transparent;
+            font-size: 20px;
+            cursor: pointer;
+            color: #64748b;
+        }
+
+        .filter-bar {
+            display: flex;
+            flex-wrap: wrap;
+            gap: 10px;
+            align-items: center;
+            margin: 10px 0 12px;
+        }
+
+        .filter-group {
+            display: flex;
+            flex-wrap: wrap;
+            gap: 8px;
+            align-items: center;
+        }
+
+        .chip-btn {
+            background: #f3f6fb;
+            color: #475569;
+            border-radius: 999px;
+            padding: 8px 12px;
+            min-height: 38px;
+            font-size: 14px;
+        }
+
+        .chip-btn.active {
+            background: #2d6cdf;
+            color: white;
+        }
+
+        .subtle-input {
+            min-height: 42px;
+            border-radius: 999px;
+            padding: 0 14px;
+            font-size: 14px;
+        }
+
+        .empty-state {
+            padding: 16px;
+            text-align: center;
+            color: #64748b;
+            background: #f8fafc;
+            border-radius: 12px;
+            border: 1px dashed #cbd5e1;
+        }
+
         @media (max-width: 768px) {
             body {
                 padding: 12px;
+            }
+
+            .page-header {
+                justify-content: space-between;
             }
 
             .dashboard {
@@ -195,8 +574,13 @@
 
             form,
             .card,
-            .catalog-section {
+            .catalog-section,
+            .modal-content {
                 padding: 12px;
+            }
+
+            .catalog-btn {
+                width: 100%;
             }
 
             .catalog-section summary {
@@ -206,6 +590,10 @@
             button {
                 width: 100%;
             }
+
+            .settings-btn {
+                margin-left: auto;
+            }
         }
     </style>
 </head>
@@ -214,126 +602,148 @@
 
     <div class="container">
 
-        <h1>🍽️ App Alimentação Pro</h1>
-
-        <!-- DASHBOARD -->
-        <div class="dashboard">
-            <div class="cardDash">
-                <h3>🔥 Muito boa</h3>
-                <p id="muitoBoa">0</p>
-            </div>
-            <div class="cardDash">
-                <h3>✅ Boa</h3>
-                <p id="boa">0</p>
-            </div>
-            <div class="cardDash">
-                <h3>⚖️ Intermediária</h3>
-                <p id="intermediaria">0</p>
-            </div>
-            <div class="cardDash">
-                <h3>🔶 Pode melhorar</h3>
-                <p id="podeMelhorar">0</p>
-            </div>
-            <div class="cardDash">
-                <h3>🍔 Livre</h3>
-                <p id="livre">0</p>
+        <div class="hero-card">
+            <div class="hero-copy">
+                <h1>🍽️ App Alimentação Pro</h1>
+                <p>Seu painel completo para registrar refeições, acompanhar o catálogo e manter o controle com uma experiência mais fluida e visualmente organizada.</p>
             </div>
 
-            <div class="cardDash">
-                <h3>📊 80/20</h3>
-                <p id="score8020">0%</p>
-            </div>
-            <div class="cardDash">
-                <h3>📅 Hoje</h3>
-                <p id="todayStatus">-</p>
+            <div class="hero-actions">
+                <button type="button" onclick="openBackupModal()">⚙️ Configurações</button>
+                <button type="button" onclick="openCatalogModal('bases')">🍽️ Catálogo</button>
+                <button type="button" onclick="document.getElementById('mealSection').scrollIntoView({behavior:'smooth'})">➕ Registrar refeição</button>
             </div>
         </div>
 
-        <h2>💾 Backup e Sincronização</h2>
+        <div id="backupModal" class="modal" onclick="if (event.target.id === 'backupModal') closeBackupModal()">
+            <div class="modal-content">
+                <div class="modal-header">
+                    <h2 style="margin:0;">💾 Backup e Sincronização</h2>
+                    <button type="button" class="modal-close" onclick="closeBackupModal()" aria-label="Fechar">✕</button>
+                </div>
 
-        <div class="card">
+                <p>
+                    Exporte seus dados para fazer backup ou importe um arquivo salvo anteriormente.
+                </p>
 
-            <p>
-                Exporte seus dados para fazer backup ou importe um arquivo salvo anteriormente.
-            </p>
+                <div class="grid">
+                    <button type="button" onclick="exportDatabase()">
+                        ⬇️ Exportar Backup
+                    </button>
 
-            <div class="grid">
+                    <button type="button" onclick="document.getElementById('backupFile').click()">
+                        ⬆️ Importar Backup
+                    </button>
 
-                <button type="button" onclick="exportDatabase()">
-                    ⬇️ Exportar Backup
-                </button>
+                    <button type="button" style="background:#e74c3c" onclick="resetDatabase()">
+                        🗑️ Resetar Banco de Dados
+                    </button>
+                </div>
 
-                <button type="button" onclick="document.getElementById('backupFile').click()">
-                    ⬆️ Importar Backup
-                </button>
-
-                <button type="button" style="background:#e74c3c" onclick="resetDatabase()">
-                    🗑️ Resetar Banco de Dados
-                </button>
-
+                <input type="file" id="backupFile" accept=".json" style="display:none" onchange="importDatabase(event)">
             </div>
-
-            <input type="file" id="backupFile" accept=".json" style="display:none" onchange="importDatabase(event)">
-
         </div>
 
-        <!-- CADASTRO -->
-        <h2>🍱 Cadastro de Alimentos</h2>
+        <div id="catalogModal" class="modal" onclick="if (event.target.id === 'catalogModal') closeCatalogModal()">
+            <div class="modal-content catalog-modal">
+                <div class="modal-header">
+                    <h2 style="margin:0;">🍽️ Catálogo</h2>
+                    <button type="button" class="modal-close" onclick="closeCatalogModal()" aria-label="Fechar">✕</button>
+                </div>
 
-        <form id="catalogForm">
-            <div class="grid">
-                <input id="base" placeholder="Base (Arroz e Feijão, Banana)" autocomplete="off" autocapitalize="words" inputmode="text">
-                <input id="protein" placeholder="Proteína (Frango, Carne, Ovos, Pasta de amendoim)" autocomplete="off" autocapitalize="words" inputmode="text">
+                <div class="catalog-tabs">
+                    <button type="button" class="tab-btn active" data-store="bases" onclick="changeCatalogTab('bases')">Bases</button>
+                    <button type="button" class="tab-btn" data-store="proteins" onclick="changeCatalogTab('proteins')">Proteínas</button>
+                    <button type="button" class="tab-btn" data-store="carbs" onclick="changeCatalogTab('carbs')">Carboidratos</button>
+                    <button type="button" class="tab-btn" data-store="freeMeals" onclick="changeCatalogTab('freeMeals')">Livres</button>
+                </div>
+
+                <div class="catalog-modal-body">
+                    <div id="catalogList" class="catalog-list"></div>
+                    <div id="catalogPagination" class="pagination"></div>
+                </div>
+            </div>
+        </div>
+
+        <section class="section-card" id="dashboardSection">
+            <div class="section-heading">
+                <div>
+                    <h2>📊 Dashboard</h2>
+                    <span>Resumo visual do seu acompanhamento semanal.</span>
+                </div>
+                <button type="button" class="dashboard-toggle" onclick="toggleDashboard()" aria-expanded="false">
+                    <span>Ver Dashboard</span>
+                    <span class="toggle-icon">▾</span>
+                </button>
             </div>
 
-            <div class="grid">
-                <input id="carb" placeholder="Carboidrato (Macarrão, Batata)" autocomplete="off" autocapitalize="words" inputmode="text">
-                <input id="freeMeal" placeholder="Refeição livre (Pizza, Hambúrguer)" autocomplete="off" autocapitalize="words" inputmode="text">
+            <div class="dashboard-panel" id="dashboardPanel">
+                <div class="dashboard">
+                    <div class="cardDash">
+                        <h3>🔥 Muito boa</h3>
+                        <p id="muitoBoa">0</p>
+                    </div>
+                    <div class="cardDash">
+                        <h3>✅ Boa</h3>
+                        <p id="boa">0</p>
+                    </div>
+                    <div class="cardDash">
+                        <h3>⚖️ Intermediária</h3>
+                        <p id="intermediaria">0</p>
+                    </div>
+                    <div class="cardDash">
+                        <h3>🔶 Pode melhorar</h3>
+                        <p id="podeMelhorar">0</p>
+                    </div>
+                    <div class="cardDash">
+                        <h3>🍔 Livre</h3>
+                        <p id="livre">0</p>
+                    </div>
+
+                    <div class="cardDash">
+                        <h3>📊 80/20</h3>
+                        <p id="score8020">0%</p>
+                    </div>
+                    <div class="cardDash">
+                        <h3>📅 Hoje</h3>
+                        <p id="todayStatus">-</p>
+                    </div>
+                </div>
+            </div>
+        </section>
+
+        <section class="section-card" id="catalogSection">
+            <div class="section-heading">
+                <div>
+                    <h2>🍱 Cadastro de Alimentos</h2>
+                    <span>Adicione novos itens ao catálogo e organize sua base de escolha.</span>
+                </div>
             </div>
 
-            <button>Salvar alimentos</button>
-        </form>
-
-        <!-- GERENCIAR CATALOGO -->
-        <details class="catalog-section">
-
-            <summary>
-                🧠 Gerenciar Catálogo
-            </summary>
-
-            <div class="grid">
-
-                <div class="card">
-                    <h3>Bases</h3>
-                    <div id="listBases"></div>
+            <form id="catalogForm">
+                <div class="grid">
+                    <input id="base" placeholder="Base (Arroz e Feijão, Banana)" autocomplete="off" autocapitalize="words" inputmode="text">
+                    <input id="protein" placeholder="Proteína (Frango, Carne, Ovos, Pasta de amendoim)" autocomplete="off" autocapitalize="words" inputmode="text">
                 </div>
 
-                <div class="card">
-                    <h3>Proteínas</h3>
-                    <div id="listProteins"></div>
+                <div class="grid">
+                    <input id="carb" placeholder="Carboidrato (Macarrão, Batata)" autocomplete="off" autocapitalize="words" inputmode="text">
+                    <input id="freeMeal" placeholder="Refeição livre (Pizza, Hambúrguer)" autocomplete="off" autocapitalize="words" inputmode="text">
                 </div>
 
-                <div class="card">
+                <button>Salvar alimentos</button>
+            </form>
+        </section>
 
-                    <h3>Carboidratos</h3>
-
-                    <div id="listCarbs"></div>
-
+        <section class="section-card" id="mealSection">
+            <div class="section-heading">
+                <div>
+                    <h2>➕ Registrar Refeição</h2>
+                    <span>Cadastre novas refeições rapidamente e mantenha o histórico em dia.</span>
                 </div>
-
-                <div class="card">
-                    <h3>Livres</h3>
-                    <div id="listFree"></div>
-                </div>
-
             </div>
 
-        </details>
-
-        <!-- REFEIÇÃO -->
-        <h2>➕ Registrar Refeição</h2>
-
-        <form id="mealForm">
+            <form id="mealForm">
 
             <label for="date"><strong>📅 Data da refeição</strong></label>
             <input type="date" id="date">
@@ -410,9 +820,38 @@
             <button>💾 Salvar refeição</button>
 
         </form>
+        </section>
 
-        <h2>📊 Refeições do mês</h2>
-        <div id="list"></div>
+        <section class="section-card" id="historySection">
+            <div class="section-heading">
+                <div>
+                    <h2>📊 Refeições do mês</h2>
+                    <span>Filtre e navegue pelo seu histórico com mais praticidade.</span>
+                </div>
+            </div>
+
+            <div class="filter-bar">
+                <div class="filter-group">
+                    <button type="button" class="chip-btn active" onclick="setMealFilter('all')">Todas</button>
+                    <button type="button" class="chip-btn" onclick="setMealFilter('today')">Hoje</button>
+                    <button type="button" class="chip-btn" onclick="setMealFilter('week')">Semana</button>
+                    <button type="button" class="chip-btn" onclick="setMealFilter('month')">Mês</button>
+                </div>
+                <div class="filter-group">
+                    <select id="classificationFilter" onchange="setMealClassification(this.value)">
+                        <option value="">Todas as classificações</option>
+                        <option value="muitoBoa">Muito boa</option>
+                        <option value="boa">Boa</option>
+                        <option value="intermediaria">Intermediária</option>
+                        <option value="podeMelhorar">Pode melhorar</option>
+                        <option value="livre">Livre</option>
+                    </select>
+                    <input id="mealSearch" class="subtle-input" type="text" placeholder="Buscar por refeição, tipo ou observação" oninput="handleMealSearch(event)">
+                </div>
+            </div>
+
+            <div id="list"></div>
+        </section>
 
     </div>
 
@@ -420,10 +859,83 @@
         // ================= PAGINAÇÃO =================
 
         const ITEMS_PER_PAGE = 5;
+        const CATALOG_ITEMS_PER_PAGE = 6;
+
+        let activeCatalogStore = "bases";
+        let activeCatalogPage = 1;
+
+        function openBackupModal() {
+            document.getElementById("backupModal").classList.add("open");
+        }
+
+        function closeBackupModal() {
+            document.getElementById("backupModal").classList.remove("open");
+        }
+
+        function openCatalogModal(store = "bases") {
+            activeCatalogStore = store;
+            activeCatalogPage = 1;
+
+            document.querySelectorAll(".tab-btn").forEach(btn => {
+                btn.classList.toggle("active", btn.getAttribute("data-store") === store);
+            });
+
+            document.getElementById("catalogModal").classList.add("open");
+            renderCatalogModal();
+        }
+
+        function closeCatalogModal() {
+            document.getElementById("catalogModal").classList.remove("open");
+        }
+
+        function changeCatalogTab(store) {
+            activeCatalogStore = store;
+            activeCatalogPage = 1;
+            document.querySelectorAll(".tab-btn").forEach(btn => {
+                btn.classList.toggle("active", btn.getAttribute("data-store") === store);
+            });
+            renderCatalogModal();
+        }
+
+        document.addEventListener("keydown", e => {
+            if (e.key === "Escape") {
+                closeBackupModal();
+                closeCatalogModal();
+            }
+        });
 
         let currentPage = 1;
 
         let allMeals = [];
+
+        function toggleDashboard() {
+            const panel = document.getElementById("dashboardPanel");
+            const button = document.querySelector(".dashboard-toggle");
+            const icon = document.querySelector(".toggle-icon");
+
+            if (!panel || !button || !icon) return;
+
+            const isOpen = panel.classList.toggle("open");
+            button.setAttribute("aria-expanded", isOpen ? "true" : "false");
+            button.querySelector("span:first-child").textContent = isOpen ? "Recolher" : "Expandir";
+            icon.style.transform = isOpen ? "rotate(180deg)" : "rotate(0deg)";
+        }
+
+        function toggleDashboard() {
+            const panel = document.getElementById("dashboardPanel");
+            const button = document.querySelector(".dashboard-toggle");
+            const icon = document.querySelector(".toggle-icon");
+
+            if (!panel || !button || !icon) return;
+
+            const isOpen = panel.classList.toggle("open");
+            button.setAttribute("aria-expanded", isOpen ? "true" : "false");
+            button.querySelector("span:first-child").textContent = isOpen ? "Recolher" : "Expandir";
+            icon.style.transform = isOpen ? "rotate(180deg)" : "rotate(0deg)";
+        }
+        let activeMealFilter = "all";
+        let activeMealClassification = "";
+        let mealSearchTerm = "";
         // ================= DB =================
         let db;
 
@@ -475,7 +987,7 @@
             ],
             carbs: [
                 "Batata Palito (Air Fryer)",
-                "Macarrão à Bolonhesa",
+                "Macarrão a Bolonhesa",
                 "Macarrão Alho e Óleo"
             ],
             freeMeals: ["Hamburguer", "Pizza", "Lanche", "Esfiha", "Cachorro Quente", "Sorvete", "Bolo"]
@@ -535,10 +1047,7 @@
             fill("carbs", "carbSelect");
             fill("freeMeals", "freeSelect");
 
-            renderCatalogList("bases", "listBases");
-            renderCatalogList("proteins", "listProteins");
-            renderCatalogList("carbs", "listCarbs");
-            renderCatalogList("freeMeals", "listFree");
+            renderCatalogModal();
 
         }
 
@@ -577,39 +1086,100 @@
         function deleteCatalogItem(store, id) {
             const tx = db.transaction(store, "readwrite");
             tx.objectStore(store).delete(id);
-            tx.oncomplete = loadCatalog;
+            tx.oncomplete = () => {
+                loadCatalog();
+                renderCatalogModal();
+            };
         }
 
-        // ================= RENDER CATALOG =================
-        function renderCatalogList(storeName, elementId) {
-            const tx = db.transaction(storeName, "readonly");
-            const store = tx.objectStore(storeName);
+        function getCatalogItems(storeName) {
+            return new Promise((resolve, reject) => {
+                const tx = db.transaction(storeName, "readonly");
+                const store = tx.objectStore(storeName);
+                const request = store.getAll();
 
-            const container = document.getElementById(elementId);
-            container.innerHTML = "";
+                request.onsuccess = () => resolve(request.result);
+                request.onerror = () => reject(request.error);
+            });
+        }
 
-            store.openCursor().onsuccess = e => {
-                const cursor = e.target.result;
+        async function renderCatalogModal() {
+            const list = document.getElementById("catalogList");
+            const pagination = document.getElementById("catalogPagination");
 
-                if (cursor) {
-                    const item = cursor.value;
+            if (!list || !pagination) return;
 
-                    const div = document.createElement("div");
-                    div.className = "item-row";
+            list.innerHTML = "";
+            pagination.innerHTML = "";
 
-                    div.innerHTML = `
-                <span>${item.name}</span>
-                <button class="small-btn"
-                    onclick="deleteCatalogItem('${storeName}', ${item.id})">
-                    🗑️
-                </button>
-            `;
+            const items = await getCatalogItems(activeCatalogStore);
 
-                    container.appendChild(div);
+            if (!items.length) {
+                list.innerHTML = '<div class="empty-state">Nenhum item cadastrado ainda.</div>';
+                return;
+            }
 
-                    cursor.continue();
+            const start = (activeCatalogPage - 1) * CATALOG_ITEMS_PER_PAGE;
+            const pageItems = items.slice(start, start + CATALOG_ITEMS_PER_PAGE);
+
+            pageItems.forEach(item => {
+                const div = document.createElement("div");
+                div.className = "catalog-item";
+
+                div.innerHTML = `
+                    <span>${item.name}</span>
+                    <button class="small-btn"
+                        onclick="deleteCatalogItem('${activeCatalogStore}', ${item.id})"
+                        aria-label="Excluir item">
+                        🗑️
+                    </button>
+                `;
+
+                list.appendChild(div);
+            });
+
+            renderCatalogPagination(items.length);
+        }
+
+        function renderCatalogPagination(totalItems) {
+            const totalPages = Math.ceil(totalItems / CATALOG_ITEMS_PER_PAGE);
+            const pagination = document.getElementById("catalogPagination");
+
+            if (!pagination || totalPages <= 1) {
+                pagination.innerHTML = "";
+                return;
+            }
+
+            pagination.innerHTML = "";
+
+            const prevBtn = document.createElement("button");
+            prevBtn.type = "button";
+            prevBtn.textContent = "◀ Anterior";
+            prevBtn.disabled = activeCatalogPage === 1;
+            prevBtn.onclick = () => {
+                if (activeCatalogPage > 1) {
+                    activeCatalogPage--;
+                    renderCatalogModal();
                 }
             };
+
+            const pageInfo = document.createElement("strong");
+            pageInfo.textContent = `Página ${activeCatalogPage} de ${totalPages}`;
+
+            const nextBtn = document.createElement("button");
+            nextBtn.type = "button";
+            nextBtn.textContent = "Próxima ▶";
+            nextBtn.disabled = activeCatalogPage === totalPages;
+            nextBtn.onclick = () => {
+                if (activeCatalogPage < totalPages) {
+                    activeCatalogPage++;
+                    renderCatalogModal();
+                }
+            };
+
+            pagination.appendChild(prevBtn);
+            pagination.appendChild(pageInfo);
+            pagination.appendChild(nextBtn);
         }
 
         // ================= SAVE MEAL =================
@@ -667,6 +1237,84 @@
             tx.oncomplete = loadMeals;
         }
 
+        function setMealFilter(filter) {
+            activeMealFilter = filter;
+            currentPage = 1;
+            document.querySelectorAll('.chip-btn').forEach(btn => {
+                btn.classList.toggle('active', btn.textContent.trim().toLowerCase() === filter || (filter === 'all' && btn.textContent.trim().toLowerCase() === 'todas'));
+            });
+            render();
+        }
+
+        function setMealClassification(value) {
+            activeMealClassification = value;
+            currentPage = 1;
+            render();
+        }
+
+        function handleMealSearch(event) {
+            mealSearchTerm = event.target.value.trim().toLowerCase();
+            currentPage = 1;
+            render();
+        }
+
+        function getVisibleMeals() {
+            const today = new Date();
+            const startOfWeek = new Date(today);
+            startOfWeek.setDate(today.getDate() - today.getDay());
+            startOfWeek.setHours(0, 0, 0, 0);
+
+            const endOfWeek = new Date(startOfWeek);
+            endOfWeek.setDate(startOfWeek.getDate() + 6);
+            endOfWeek.setHours(23, 59, 59, 999);
+
+            const now = new Date();
+            const currentMonth = now.getMonth();
+            const currentYear = now.getFullYear();
+
+            return [...allMeals]
+                .filter(m => {
+                    if (activeMealClassification && m.classification !== activeMealClassification) return false;
+
+                    if (mealSearchTerm) {
+                        const haystack = `${m.notes || ""} ${formatMealType(m.type)} ${m.base || ""} ${m.protein || ""} ${m.carb || ""} ${m.freeMeal || ""}`.toLowerCase();
+                        if (!haystack.includes(mealSearchTerm)) return false;
+                    }
+
+                    if (!m.date) return false;
+
+                    const mealDate = new Date(`${m.date}T00:00:00`);
+
+                    switch (activeMealFilter) {
+                        case 'today':
+                            return mealDate.toDateString() === today.toDateString();
+                        case 'week':
+                            return mealDate >= startOfWeek && mealDate <= endOfWeek;
+                        case 'month':
+                            return mealDate.getMonth() === currentMonth && mealDate.getFullYear() === currentYear;
+                        default:
+                            return true;
+                    }
+                })
+                .sort((a, b) => new Date(b.date) - new Date(a.date));
+        }
+
+        function updateMealFeedSummary(meals) {
+            const visibleCount = document.getElementById("visibleMealsCount");
+            const todayCount = document.getElementById("todayFeedCount");
+            const latestLabel = document.getElementById("latestMealLabel");
+
+            if (visibleCount) visibleCount.textContent = meals.length;
+            if (todayCount) {
+                const todayMeals = meals.filter(m => m.date === new Date().toISOString().split("T")[0]).length;
+                todayCount.textContent = todayMeals;
+            }
+            if (latestLabel) {
+                const latest = meals[0];
+                latestLabel.textContent = latest ? formatDate(latest.date) : "—";
+            }
+        }
+
         // ================= FORMATAÇÃO =================
 
         function formatDate(date) {
@@ -710,14 +1358,20 @@
 
             list.innerHTML = "";
 
-            const meals = [...allMeals]
-                .sort((a, b) => new Date(b.date) - new Date(a.date));
+            const meals = getVisibleMeals();
+            updateMealFeedSummary(meals);
 
             const start = (currentPage - 1) * ITEMS_PER_PAGE;
 
             const end = start + ITEMS_PER_PAGE;
 
             const pageMeals = meals.slice(start, end);
+
+            if (!pageMeals.length) {
+                list.innerHTML = '<div class="empty-state">Nenhuma refeição encontrada para este filtro.</div>';
+                renderPagination(meals.length);
+                return;
+            }
 
             pageMeals.forEach(m => {
 
