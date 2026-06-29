@@ -4,7 +4,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
-    <title>Controle alimentação</title>
+    <title>App Alimentação Pro</title>
 
     <style>
         * {
@@ -439,10 +439,11 @@
             });
         };
 
-        request.onsuccess = function (e) {
+        request.onsuccess = async function (e) {
             db = e.target.result;
 
             setDefaultDate();
+            await seedCatalogIfNeeded();
             loadCatalog();
             loadMeals();
         };
@@ -460,6 +461,50 @@
         function setDefaultDate() {
             document.getElementById("date").value =
                 new Date().toISOString().split("T")[0];
+        }
+
+        // ================= CATALOG INICIAL =================
+        const initialCatalog = {
+            bases: ["Arroz", "Feijão", "Arroz e Feijão", "Banana", "Pão Francês"],
+            proteins: [
+                "Filé de Frango Grelhado",
+                "Contra Filé Grelhado",
+                "Carne de Panela (Patinho)",
+                "Filé Mignon Suíno",
+                "Coxinha da Asa"
+            ],
+            carbs: [
+                "Batata Palito (Air Fryer)",
+                "Macarrão à Bolonhesa",
+                "Macarrão Alho e Óleo"
+            ],
+            freeMeals: ["Hamburguer", "Pizza", "Lanche", "Esfiha", "Cachorro Quente", "Sorvete", "Bolo"]
+        };
+
+        function seedCatalogIfNeeded() {
+            return Promise.all(
+                Object.entries(initialCatalog).map(([storeName, items]) =>
+                    new Promise((resolve, reject) => {
+                        const tx = db.transaction(storeName, "readwrite");
+                        const store = tx.objectStore(storeName);
+                        const countRequest = store.count();
+
+                        countRequest.onsuccess = () => {
+                            if (countRequest.result > 0) {
+                                resolve();
+                                return;
+                            }
+
+                            items.forEach(item => store.add({ name: item }));
+
+                            tx.oncomplete = () => resolve();
+                            tx.onerror = () => reject(tx.error);
+                        };
+
+                        countRequest.onerror = () => reject(countRequest.error);
+                    })
+                )
+            );
         }
 
         // ================= CATALOG =================
