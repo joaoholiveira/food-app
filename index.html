@@ -907,6 +907,7 @@
         let currentPage = 1;
 
         let allMeals = [];
+        let editingMealId = null;
 
         function toggleDashboard() {
             const panel = document.getElementById("dashboardPanel");
@@ -1200,12 +1201,23 @@
             };
 
             const tx = db.transaction("meals", "readwrite");
-            tx.objectStore("meals").add(meal);
+            const store = tx.objectStore("meals");
 
-            tx.oncomplete = loadMeals;
+            if (editingMealId !== null) {
+                meal.id = editingMealId;
+                store.put(meal);
+            } else {
+                store.add(meal);
+            }
 
-            e.target.reset();
-            setDefaultDate();
+            tx.oncomplete = () => {
+                loadMeals();
+                resetMealForm();
+            };
+
+            tx.onerror = () => {
+                alert("Não foi possível salvar a refeição.");
+            };
         });
 
         // ================= LOAD MEALS =================
@@ -1235,6 +1247,39 @@
             const tx = db.transaction("meals", "readwrite");
             tx.objectStore("meals").delete(id);
             tx.oncomplete = loadMeals;
+        }
+
+        function editMeal(id) {
+            const meal = allMeals.find(item => item.id === id);
+            if (!meal) return;
+
+            editingMealId = id;
+            document.getElementById("date").value = meal.date || "";
+            document.getElementById("mealType").value = meal.type || "cafeManha";
+            document.getElementById("baseSelect").value = meal.base || "";
+            document.getElementById("proteinSelect").value = meal.protein || "";
+            document.getElementById("carbSelect").value = meal.carb || "";
+            document.getElementById("freeSelect").value = meal.freeMeal || "";
+            document.getElementById("hasSide").value = meal.hasSide || "";
+            document.getElementById("beverage").value = meal.beverage || "";
+            document.getElementById("classification").value = meal.classification || "muitoBoa";
+            document.getElementById("notes").value = meal.notes || "";
+
+            document.getElementById("mealSection").scrollIntoView({ behavior: "smooth" });
+            const submitButton = document.querySelector("#mealForm button");
+            if (submitButton) {
+                submitButton.textContent = "✏️ Atualizar refeição";
+            }
+        }
+
+        function resetMealForm() {
+            editingMealId = null;
+            document.getElementById("mealForm").reset();
+            setDefaultDate();
+            const submitButton = document.querySelector("#mealForm button");
+            if (submitButton) {
+                submitButton.textContent = "💾 Salvar refeição";
+            }
         }
 
         function setMealFilter(filter) {
@@ -1350,6 +1395,22 @@
             return map[value] || value;
         }
 
+        function formatBeverage(value) {
+
+            const map = {
+                agua: "💧 Água",
+                cafe: "☕ Café",
+                cha: "🍵 Chá",
+                suco: "🧃 Suco",
+                refrigeranteZero: "🥤 Refrigerante Zero",
+                refrigerante: "🥤 Refrigerante",
+                energetico: "⚡ Energético",
+                outro: "🥛 Outro"
+            };
+
+            return map[value] || value;
+        }
+
 
         // ================= RENDER MEALS =================
         function render() {
@@ -1394,16 +1455,24 @@
 
                     ${m.hasSide ? `<p><strong>🥗 Salada/Legumes:</strong> ${m.hasSide === "sim" ? "Sim" : "Não"}</p>` : ""}
 
+                    ${m.beverage ? `<p><strong>🥤 Bebida:</strong> ${formatBeverage(m.beverage)}</p>` : ""}
+
                     ${m.freeMeal ? `<p><strong>🍔 Refeição Livre:</strong> ${m.freeMeal}</p>` : ""}
 
                     <p><strong>⭐ Classificação:</strong> ${formatClassification(m.classification)}</p>
 
                     ${m.notes ? `<p><strong>📝 Observações:</strong><br>${m.notes}</p>` : ""}
 
-                    <button class="delete-btn"
-                        onclick="deleteMeal(${m.id})">
-                        🗑️ Excluir refeição
-                    </button>
+                    <div class="grid" style="margin-top:10px; gap:8px;">
+                        <button class="delete-btn"
+                            onclick="editMeal(${m.id})">
+                            ✏️ Editar
+                        </button>
+                        <button class="delete-btn"
+                            onclick="deleteMeal(${m.id})">
+                            🗑️ Excluir
+                        </button>
+                    </div>
 
                 `;
 
