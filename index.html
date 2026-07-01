@@ -551,6 +551,47 @@
             font-size: 14px;
         }
 
+        .history-toolbar {
+            display: flex;
+            flex-wrap: wrap;
+            gap: 10px;
+            align-items: center;
+            justify-content: space-between;
+            margin-bottom: 12px;
+        }
+
+        .history-actions {
+            display: flex;
+            flex-wrap: wrap;
+            gap: 8px;
+            align-items: center;
+        }
+
+        .history-action-btn {
+            min-height: 40px;
+            padding: 8px 12px;
+            border-radius: 999px;
+            background: #f3f6fb;
+            color: #475569;
+            font-size: 14px;
+            width: auto;
+        }
+
+        .history-action-btn.primary {
+            background: #2d6cdf;
+            color: white;
+        }
+
+        .history-action-btn.secondary {
+            background: #e2e8f0;
+            color: #334155;
+        }
+
+        .history-date-label {
+            font-size: 14px;
+            color: #64748b;
+        }
+
         .empty-state {
             padding: 16px;
             text-align: center;
@@ -874,6 +915,18 @@
                 </div>
             </div>
 
+            <div class="history-toolbar">
+                <div class="history-actions">
+                    <button type="button" class="history-action-btn primary" id="dateFilterButton" onclick="openDateFilterPicker()">📅 Filtrar por dia</button>
+                    <button type="button" class="history-action-btn secondary" id="clearDateFilterButton" onclick="clearDateFilter()" style="display:none;">✕ Limpar</button>
+                    <input type="date" id="dateFilterInput" style="display:none" onchange="applyDateFilter(this.value)">
+                </div>
+                <div class="history-actions">
+                    <button type="button" class="history-action-btn" onclick="copyVisibleMeals()">📋 Copiar refeições</button>
+                </div>
+            </div>
+
+            <div id="dateFilterLabel" class="history-date-label"></div>
             <div id="list"></div>
         </section>
 
@@ -965,6 +1018,7 @@
         let activeMealFilter = "all";
         let activeMealClassification = "";
         let mealSearchTerm = "";
+        let activeDateFilter = "";
         // ================= DB =================
         let db;
 
@@ -1331,6 +1385,50 @@
             render();
         }
 
+        function openDateFilterPicker() {
+            const input = document.getElementById("dateFilterInput");
+            if (!input) return;
+            if (typeof input.showPicker === "function") {
+                input.showPicker();
+            } else {
+                input.click();
+            }
+        }
+
+        function applyDateFilter(value) {
+            activeDateFilter = value;
+            currentPage = 1;
+            updateDateFilterUi();
+            render();
+        }
+
+        function clearDateFilter() {
+            activeDateFilter = "";
+            const input = document.getElementById("dateFilterInput");
+            if (input) input.value = "";
+            currentPage = 1;
+            updateDateFilterUi();
+            render();
+        }
+
+        function updateDateFilterUi() {
+            const button = document.getElementById("dateFilterButton");
+            const clearButton = document.getElementById("clearDateFilterButton");
+            const label = document.getElementById("dateFilterLabel");
+
+            if (button) {
+                button.textContent = activeDateFilter ? `📅 ${formatDate(activeDateFilter)}` : "📅 Filtrar por dia";
+            }
+
+            if (clearButton) {
+                clearButton.style.display = activeDateFilter ? "inline-flex" : "none";
+            }
+
+            if (label) {
+                label.textContent = activeDateFilter ? `Mostrando refeições de ${formatDate(activeDateFilter)}.` : "";
+            }
+        }
+
         function getVisibleMeals() {
             const today = new Date();
             const startOfWeek = new Date(today);
@@ -1357,6 +1455,11 @@
                     if (!m.date) return false;
 
                     const mealDate = new Date(`${m.date}T00:00:00`);
+
+                    if (activeDateFilter) {
+                        const selectedDate = new Date(`${activeDateFilter}T00:00:00`);
+                        return mealDate.toDateString() === selectedDate.toDateString();
+                    }
 
                     switch (activeMealFilter) {
                         case 'today':
@@ -1423,6 +1526,46 @@
             return map[value] || value;
         }
 
+        function getClassificationLabel(value) {
+            const map = {
+                muitoBoa: "Muito Bom",
+                boa: "Bom",
+                intermediaria: "Intermediária",
+                podeMelhorar: "Pode melhorar",
+                livre: "Livre"
+            };
+
+            return map[value] || "Sem avaliação";
+        }
+
+        function formatMealTypeForCopy(type) {
+            const map = {
+                cafeManha: "Café da manhã",
+                almoco: "Almoço",
+                cafeTarde: "Café da tarde",
+                jantar: "Jantar",
+                lanche: "Lanche / Extra"
+            };
+
+            return map[type] || type;
+        }
+
+        function buildMealCopyDescription(meal) {
+            const parts = [];
+
+            if (meal.base) parts.push(meal.base);
+            if (meal.protein) parts.push(meal.protein);
+            if (meal.carb) parts.push(meal.carb);
+            if (meal.freeMeal) parts.push(meal.freeMeal);
+            if (meal.hasSide === "sim") parts.push("Salada / legumes");
+            if (meal.beverage) parts.push(formatBeverage(meal.beverage));
+            if (meal.notes) parts.push(meal.notes);
+
+            if (!parts.length) return "Sem descrição";
+
+            return parts.join(" + ");
+        }
+
         function formatBeverage(value) {
 
             const map = {
@@ -1440,11 +1583,59 @@
         }
 
 
+        function copyVisibleMeals() {
+            const meals = getVisibleMeals();
+
+            if (!meals.length) {
+                alert("Nenhuma refeição para copiar.");
+                return;
+            }
+
+            const groupedByDate = meals.reduce((acc, meal) => {
+                if (!acc[meal.date]) acc[meal.date] = [];
+                acc[meal.date].push(meal);
+                return acc;
+            }, {});
+
+            const sections = Object.entries(groupedByDate)
+                .sort((a, b) => new Date(b[0]) - new Date(a[0]))
+                .map(([date, dayMeals]) => {
+                    const lines = dayMeals
+                        .map(meal => `${formatMealTypeForCopy(meal.type)} | ${buildMealCopyDescription(meal)} | ${getClassificationLabel(meal.classification)}`)
+                        .join("\n");
+
+                    return `${formatDate(date)}\n\n${lines}`;
+                });
+
+            const text = sections.join("\n\n");
+
+            if (navigator.clipboard && navigator.clipboard.writeText) {
+                navigator.clipboard.writeText(text).then(() => {
+                    alert("Refeições copiadas com sucesso!");
+                }).catch(() => {
+                    fallbackCopy(text);
+                });
+            } else {
+                fallbackCopy(text);
+            }
+        }
+
+        function fallbackCopy(text) {
+            const area = document.createElement("textarea");
+            area.value = text;
+            document.body.appendChild(area);
+            area.select();
+            document.execCommand("copy");
+            document.body.removeChild(area);
+            alert("Refeições copiadas com sucesso!");
+        }
+
         // ================= RENDER MEALS =================
         function render() {
 
             const list = document.getElementById("list");
 
+            updateDateFilterUi();
             list.innerHTML = "";
 
             const meals = getVisibleMeals();
