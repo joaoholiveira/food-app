@@ -313,12 +313,14 @@
             line-height: 1;
             min-width: 32px;
             min-height: 32px;
+            width: auto;
             background: #ef5350;
             color: white;
             border: none;
             border-radius: 999px;
             cursor: pointer;
             transition: transform 0.2s ease, background 0.2s ease;
+            flex-shrink: 0;
         }
 
         .small-btn:hover {
@@ -459,11 +461,14 @@
             background: #f8fafc;
             border-radius: 10px;
             gap: 10px;
+            flex-wrap: wrap;
         }
 
         .catalog-item span {
-            flex: 1;
+            flex: 1 1 auto;
+            min-width: 0;
             overflow-wrap: anywhere;
+            line-height: 1.4;
         }
 
         .empty-state {
@@ -555,6 +560,14 @@
             border: 1px dashed #cbd5e1;
         }
 
+        .app-footer {
+            text-align: center;
+            margin-top: 20px;
+            padding: 12px 8px 4px;
+            color: #64748b;
+            font-size: 13px;
+        }
+
         @media (max-width: 768px) {
             body {
                 padding: 12px;
@@ -587,8 +600,19 @@
                 font-size: 18px;
             }
 
-            button {
+            .hero-actions button,
+            .catalog-btn,
+            form button,
+            .pagination button,
+            .delete-btn {
                 width: 100%;
+            }
+
+            .small-btn,
+            .modal-close,
+            .chip-btn,
+            .tab-btn {
+                width: auto;
             }
 
             .settings-btn {
@@ -854,6 +878,10 @@
         </section>
 
     </div>
+
+    <footer class="app-footer" aria-label="Rodapé do aplicativo">
+        <span>Versão 1.0.0</span>
+    </footer>
 
     <script>
         // ================= PAGINAÇÃO =================
