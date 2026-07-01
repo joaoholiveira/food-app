@@ -1053,9 +1053,44 @@
         };
 
         // ================= DATA =================
+        function getBrazilDateString(date = new Date()) {
+            const formatter = new Intl.DateTimeFormat("en-CA", {
+                timeZone: "America/Sao_Paulo",
+                year: "numeric",
+                month: "2-digit",
+                day: "2-digit"
+            });
+
+            const parts = formatter.formatToParts(date);
+            const values = Object.fromEntries(
+                parts.filter(part => part.type !== "literal").map(part => [part.type, part.value])
+            );
+
+            return `${values.year}-${values.month}-${values.day}`;
+        }
+
+        function getWeekRange(dateString) {
+            const [year, month, day] = dateString.split("-").map(Number);
+            const date = new Date(Date.UTC(year, month - 1, day));
+            const dayOfWeek = date.getUTCDay();
+
+            const start = new Date(date);
+            start.setUTCDate(date.getUTCDate() - dayOfWeek);
+
+            const end = new Date(start);
+            end.setUTCDate(start.getUTCDate() + 6);
+
+            return {
+                start: `${start.getUTCFullYear()}-${String(start.getUTCMonth() + 1).padStart(2, "0")}-${String(start.getUTCDate()).padStart(2, "0")}`,
+                end: `${end.getUTCFullYear()}-${String(end.getUTCMonth() + 1).padStart(2, "0")}-${String(end.getUTCDate()).padStart(2, "0")}`
+            };
+        }
+
         function setDefaultDate() {
-            document.getElementById("date").value =
-                new Date().toISOString().split("T")[0];
+            const dateInput = document.getElementById("date");
+            if (dateInput) {
+                dateInput.value = getBrazilDateString();
+            }
         }
 
         // ================= CATALOG INICIAL =================
@@ -1430,18 +1465,9 @@
         }
 
         function getVisibleMeals() {
-            const today = new Date();
-            const startOfWeek = new Date(today);
-            startOfWeek.setDate(today.getDate() - today.getDay());
-            startOfWeek.setHours(0, 0, 0, 0);
-
-            const endOfWeek = new Date(startOfWeek);
-            endOfWeek.setDate(startOfWeek.getDate() + 6);
-            endOfWeek.setHours(23, 59, 59, 999);
-
-            const now = new Date();
-            const currentMonth = now.getMonth();
-            const currentYear = now.getFullYear();
+            const today = getBrazilDateString();
+            const { start: weekStart, end: weekEnd } = getWeekRange(today);
+            const [currentYear, currentMonth] = today.split("-").map(Number);
 
             return [...allMeals]
                 .filter(m => {
@@ -1454,25 +1480,22 @@
 
                     if (!m.date) return false;
 
-                    const mealDate = new Date(`${m.date}T00:00:00`);
-
                     if (activeDateFilter) {
-                        const selectedDate = new Date(`${activeDateFilter}T00:00:00`);
-                        return mealDate.toDateString() === selectedDate.toDateString();
+                        return m.date === activeDateFilter;
                     }
 
                     switch (activeMealFilter) {
                         case 'today':
-                            return mealDate.toDateString() === today.toDateString();
+                            return m.date === today;
                         case 'week':
-                            return mealDate >= startOfWeek && mealDate <= endOfWeek;
+                            return m.date >= weekStart && m.date <= weekEnd;
                         case 'month':
-                            return mealDate.getMonth() === currentMonth && mealDate.getFullYear() === currentYear;
+                            return Number(m.date.slice(0, 4)) === currentYear && Number(m.date.slice(5, 7)) === currentMonth;
                         default:
                             return true;
                     }
                 })
-                .sort((a, b) => new Date(b.date) - new Date(a.date));
+                .sort((a, b) => b.date.localeCompare(a.date));
         }
 
         function updateMealFeedSummary(meals) {
@@ -1482,7 +1505,8 @@
 
             if (visibleCount) visibleCount.textContent = meals.length;
             if (todayCount) {
-                const todayMeals = meals.filter(m => m.date === new Date().toISOString().split("T")[0]).length;
+                const today = getBrazilDateString();
+                const todayMeals = meals.filter(m => m.date === today).length;
                 todayCount.textContent = todayMeals;
             }
             if (latestLabel) {
@@ -1716,15 +1740,16 @@
             let total = 0;
             let count = 0;
 
-            const today = new Date().toISOString().split("T")[0];
+            const today = getBrazilDateString();
+            const [currentYear, currentMonth] = today.split("-").map(Number);
 
             let todayTotal = 0;
             let todayCount = 0;
 
             meals.forEach(m => {
-                const d = new Date(m.date);
+                const [mealYear, mealMonth] = (m.date || "").split("-").map(Number);
 
-                if (d.getMonth() === new Date().getMonth()) {
+                if (mealYear === currentYear && mealMonth === currentMonth) {
                     counts[m.classification]++;
                     total += scoreMap[m.classification] || 0;
                     count++;
@@ -1765,7 +1790,7 @@
 
             const backup = {
                 version: 1,
-                exportDate: new Date().toISOString()
+                exportDate: new Date().toLocaleString("pt-BR", { timeZone: "America/Sao_Paulo" })
             };
 
             for (const storeName of stores) {
@@ -1782,7 +1807,7 @@
 
             const a = document.createElement("a");
 
-            const today = new Date().toISOString().split("T")[0];
+            const today = getBrazilDateString();
 
             a.href = url;
             a.download = `alimentacao_backup_${today}.json`;
