@@ -381,6 +381,118 @@
             color: #444;
         }
 
+        .label-hint {
+            font-size: 12px;
+            color: #888;
+            font-weight: normal;
+        }
+
+        .multi-select-container {
+            position: relative;
+            width: 100%;
+        }
+
+        .multi-select-button {
+            width: 100%;
+            padding: 12px;
+            border-radius: 8px;
+            border: 1px solid #d0d7de;
+            font-size: 16px;
+            min-height: 48px;
+            background: #fff;
+            text-align: left;
+            cursor: pointer;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            gap: 8px;
+            color: #263238;
+        }
+
+        .multi-select-button:hover {
+            background: #f8f8f8;
+        }
+
+        .multi-select-button.open {
+            background: #f3f6fb;
+            border-color: #2d6cdf;
+            color: #263238;
+        }
+
+        .multi-select-button-text {
+            flex: 1;
+            overflow: hidden;
+            text-overflow: ellipsis;
+            white-space: nowrap;
+            min-height: 24px;
+            display: flex;
+            align-items: center;
+            color: #263238;
+        }
+
+        .multi-select-arrow {
+            width: 20px;
+            height: 20px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 12px;
+            transition: transform 0.2s ease;
+            flex-shrink: 0;
+        }
+
+        .multi-select-button.open .multi-select-arrow {
+            transform: rotate(180deg);
+        }
+
+        .multi-select-dropdown {
+            display: none;
+            position: absolute;
+            top: calc(100% + 2px);
+            left: 0;
+            right: 0;
+            background: white;
+            border: 1px solid #d0d7de;
+            border-radius: 8px;
+            box-shadow: 0 4px 12px rgba(0, 0, 0, 0.12);
+            z-index: 1000;
+            max-height: 300px;
+            overflow-y: auto;
+            padding: 4px 0;
+        }
+
+        .multi-select-dropdown.open {
+            display: block;
+        }
+
+        .multi-select-option {
+            display: flex;
+            align-items: center;
+            gap: 8px;
+            padding: 10px 12px;
+            cursor: pointer;
+            transition: background 0.1s ease;
+        }
+
+        .multi-select-option:hover {
+            background: #f3f6fb;
+        }
+
+        .multi-select-option input[type="checkbox"] {
+            cursor: pointer;
+            width: 18px;
+            height: 18px;
+            min-width: 18px;
+        }
+
+        .multi-select-option label {
+            flex: 1;
+            margin: 0;
+            cursor: pointer;
+            font-size: 14px;
+            color: #263238;
+        }
+
         .grid>div {
             display: flex;
             flex-direction: column;
@@ -721,6 +833,7 @@
                     <button type="button" class="tab-btn" data-store="proteins" onclick="changeCatalogTab('proteins')">Proteínas</button>
                     <button type="button" class="tab-btn" data-store="carbs" onclick="changeCatalogTab('carbs')">Carboidratos</button>
                     <button type="button" class="tab-btn" data-store="freeMeals" onclick="changeCatalogTab('freeMeals')">Livres</button>
+                    <button type="button" class="tab-btn" data-store="fruits" onclick="changeCatalogTab('fruits')">Frutas</button>
                 </div>
 
                 <div class="catalog-modal-body">
@@ -796,6 +909,10 @@
                     <input id="freeMeal" placeholder="Refeição livre (Pizza, Hambúrguer)" autocomplete="off" autocapitalize="words" inputmode="text">
                 </div>
 
+                <div class="grid">
+                    <input id="fruit" placeholder="Fruta (Banana, Maçã, Mamão)" autocomplete="off" autocapitalize="words" inputmode="text">
+                </div>
+
                 <button>Salvar alimentos</button>
             </form>
         </section>
@@ -825,13 +942,13 @@
             <div class="grid">
 
                 <div>
-                    <label for="baseSelect"><strong>🍚 Base</strong></label>
-                    <select id="baseSelect"></select>
+                    <label for="baseSelectContainer"><strong>🍚 Base</strong> <span class="label-hint">(Selecione um ou mais itens)</span></label>
+                    <div class="multi-select-container" id="baseSelectContainer"></div>
                 </div>
 
                 <div>
-                    <label for="proteinSelect"><strong>🥩 Proteína</strong></label>
-                    <select id="proteinSelect"></select>
+                    <label for="proteinSelectContainer"><strong>🥩 Proteína</strong> <span class="label-hint">(Selecione um ou mais itens)</span></label>
+                    <div class="multi-select-container" id="proteinSelectContainer"></div>
                 </div>
 
             </div>
@@ -839,15 +956,20 @@
             <div class="grid">
 
                 <div>
-                    <label for="carbSelect"><strong>🍝 Carboidrato</strong></label>
-                    <select id="carbSelect"></select>
+                    <label for="carbSelectContainer"><strong>🍝 Carboidrato</strong> <span class="label-hint">(Selecione um ou mais itens)</span></label>
+                    <div class="multi-select-container" id="carbSelectContainer"></div>
                 </div>
 
                 <div>
-                    <label for="freeSelect"><strong>🍔 Refeição livre</strong></label>
-                    <select id="freeSelect"></select>
+                    <label for="freeSelectContainer"><strong>🍔 Refeição livre</strong> <span class="label-hint">(Selecione um ou mais itens)</span></label>
+                    <div class="multi-select-container" id="freeSelectContainer"></div>
                 </div>
 
+            </div>
+
+            <div>
+                <label for="fruitSelectContainer"><strong>🍌 Fruta</strong> <span class="label-hint">(Selecione um ou mais itens)</span></label>
+                <div class="multi-select-container" id="fruitSelectContainer"></div>
             </div>
 
             <label for="hasSide"><strong>🥗 Ingeriu salada ou legumes?</strong></label>
@@ -880,9 +1002,9 @@
             </select>
 
             <label for="notes"><strong>📝 Observações</strong></label>
-            <textarea id="notes" placeholder="Ex.: Almoço fora de casa, pouca fome, etc." rows="3" autocomplete="off" autocapitalize="sentences"></textarea>
+            <textarea id="notes" placeholder="Ex.: Quantidade de comida ingerida (Ex.: 15g de pasta de amendoin, 3 Coxinhas da Asa); Almoço fora de casa; pouca fome." rows="3" autocomplete="off" autocapitalize="sentences"></textarea>
 
-            <button>💾 Salvar refeição</button>
+            <button id="saveMealButton">💾 Salvar refeição</button>
 
         </form>
         </section>
@@ -933,7 +1055,7 @@
     </div>
 
     <footer class="app-footer" aria-label="Rodapé do aplicativo">
-        <span>Versão 1.0.0</span>
+        <span>V2.0.0</span>
     </footer>
 
     <script>
@@ -982,6 +1104,23 @@
             if (e.key === "Escape") {
                 closeBackupModal();
                 closeCatalogModal();
+                document.querySelectorAll(".multi-select-dropdown.open").forEach(dd => {
+                    const container = dd.closest(".multi-select-container");
+                    if (container) {
+                        closeMultiSelectDropdown(container.id);
+                    }
+                });
+            }
+        });
+
+        document.addEventListener("click", e => {
+            if (!e.target.closest(".multi-select-container")) {
+                document.querySelectorAll(".multi-select-dropdown.open").forEach(dd => {
+                    const container = dd.closest(".multi-select-container");
+                    if (container) {
+                        closeMultiSelectDropdown(container.id);
+                    }
+                });
             }
         });
 
@@ -1022,12 +1161,12 @@
         // ================= DB =================
         let db;
 
-        const request = indexedDB.open("foodDB", 5);
+        const request = indexedDB.open("foodDB", 6);
 
         request.onupgradeneeded = function (e) {
             db = e.target.result;
 
-            ["meals", "bases", "proteins", "carbs", "freeMeals"].forEach(s => {
+            ["meals", "bases", "proteins", "carbs", "freeMeals", "fruits"].forEach(s => {
                 if (!db.objectStoreNames.contains(s)) {
                     db.createObjectStore(s, { keyPath: "id", autoIncrement: true });
                 }
@@ -1108,7 +1247,8 @@
                 "Macarrão a Bolonhesa",
                 "Macarrão Alho e Óleo"
             ],
-            freeMeals: ["Hamburguer", "Pizza", "Lanche", "Esfiha", "Cachorro Quente", "Sorvete", "Bolo"]
+            freeMeals: ["Hamburguer", "Pizza", "Lanche", "Esfiha", "Cachorro Quente", "Sorvete", "Bolo"],
+            fruits: ["Banana", "Maçã", "Mamão", "Manga", "Uva", "Pera"]
         };
 
         function seedCatalogIfNeeded() {
@@ -1145,6 +1285,7 @@
             addItem("proteins", protein.value);
             addItem("carbs", carb.value);
             addItem("freeMeals", freeMeal.value);
+            addItem("fruits", fruit.value);
 
             e.target.reset();
             setTimeout(loadCatalog, 200);
@@ -1157,47 +1298,139 @@
             tx.objectStore(store).add({ name: value });
         }
 
-        // ================= LOAD CATALOG =================
-        function loadCatalog() {
+        const multiSelectState = {
+            baseSelectContainer: [],
+            proteinSelectContainer: [],
+            carbSelectContainer: [],
+            freeSelectContainer: [],
+            fruitSelectContainer: []
+        };
 
-            fill("bases", "baseSelect");
-            fill("proteins", "proteinSelect");
-            fill("carbs", "carbSelect");
-            fill("freeMeals", "freeSelect");
-
-            renderCatalogModal();
-
+        function getSelectedValues(containerId) {
+            return multiSelectState[containerId] || [];
         }
 
-        function fill(storeName, selectId) {
-            const tx = db.transaction(storeName, "readonly");
-            const store = tx.objectStore(storeName);
+        function setSelectedValues(containerId, values) {
+            const normalized = Array.isArray(values) ? values : values ? [values] : [];
+            multiSelectState[containerId] = normalized;
+            updateMultiSelectButton(containerId);
+        }
 
-            const items = [];
+        function toggleMultiSelectDropdown(containerId) {
+            const container = document.getElementById(containerId);
+            const button = container.querySelector(".multi-select-button");
+            const dropdown = container.querySelector(".multi-select-dropdown");
 
-            store.openCursor().onsuccess = e => {
-                const cursor = e.target.result;
-
-                if (cursor) {
-                    items.push(cursor.value.name);
-                    cursor.continue();
-                } else {
-                    const sel = document.getElementById(selectId);
-                    sel.innerHTML = "";
-
-                    const empty = document.createElement("option");
-                    empty.value = "";
-                    empty.textContent = "— Nenhum —";
-                    sel.appendChild(empty);
-
-                    items.forEach(i => {
-                        const opt = document.createElement("option");
-                        opt.value = i;
-                        opt.textContent = i;
-                        sel.appendChild(opt);
-                    });
+            document.querySelectorAll(".multi-select-dropdown.open").forEach(dd => {
+                if (dd !== dropdown) {
+                    dd.classList.remove("open");
+                    dd.closest(".multi-select-container").querySelector(".multi-select-button").classList.remove("open");
                 }
-            };
+            });
+
+            button.classList.toggle("open");
+            dropdown.classList.toggle("open");
+        }
+
+        function closeMultiSelectDropdown(containerId) {
+            const container = document.getElementById(containerId);
+            const button = container.querySelector(".multi-select-button");
+            const dropdown = container.querySelector(".multi-select-dropdown");
+            button.classList.remove("open");
+            dropdown.classList.remove("open");
+        }
+
+        function toggleMultiSelectOption(containerId, value) {
+            const selected = multiSelectState[containerId] || [];
+            const index = selected.indexOf(value);
+
+            if (index > -1) {
+                selected.splice(index, 1);
+            } else {
+                selected.push(value);
+            }
+
+            multiSelectState[containerId] = selected;
+            updateMultiSelectButton(containerId);
+        }
+
+        function updateMultiSelectButton(containerId) {
+            const container = document.getElementById(containerId);
+            if (!container) return;
+
+            const button = container.querySelector(".multi-select-button .multi-select-button-text");
+            const selected = multiSelectState[containerId] || [];
+
+            if (button) {
+                if (selected.length === 0) {
+                    button.textContent = "— Nenhum —";
+                } else if (selected.length === 1) {
+                    button.textContent = selected[0];
+                } else {
+                    button.textContent = `${selected.length} itens selecionados`;
+                }
+            }
+
+            const checkboxes = container.querySelectorAll("input[type='checkbox']");
+            checkboxes.forEach(cb => {
+                cb.checked = selected.includes(cb.value);
+            });
+        }
+
+        function renderMultiSelectDropdown(storeName, containerId) {
+            return new Promise(async (resolve) => {
+                const items = await getCatalogItems(storeName);
+                const container = document.getElementById(containerId);
+
+                if (!container) {
+                    resolve();
+                    return;
+                }
+
+                container.innerHTML = `
+                    <button type="button" class="multi-select-button" onclick="toggleMultiSelectDropdown('${containerId}')">
+                        <span class="multi-select-button-text">— Nenhum —</span>
+                        <span class="multi-select-arrow">▼</span>
+                    </button>
+                    <div class="multi-select-dropdown">
+                        ${items.map(item => `
+                            <div class="multi-select-option">
+                                <input type="checkbox" id="${containerId}_${item.id}" value="${item.name}" onchange="toggleMultiSelectOption('${containerId}', '${item.name}')">
+                                <label for="${containerId}_${item.id}">${item.name}</label>
+                            </div>
+                        `).join("")}
+                    </div>
+                `;
+
+                updateMultiSelectButton(containerId);
+                resolve();
+            });
+        }
+
+        function normalizeValues(value) {
+            if (Array.isArray(value)) return value.filter(Boolean);
+            if (typeof value === "string") {
+                return value
+                    .split(",")
+                    .map(item => item.trim())
+                    .filter(Boolean);
+            }
+            return [];
+        }
+
+        function formatValues(values) {
+            return normalizeValues(values).join(", ");
+        }
+
+        // ================= LOAD CATALOG =================
+        async function loadCatalog() {
+            await renderMultiSelectDropdown("bases", "baseSelectContainer");
+            await renderMultiSelectDropdown("proteins", "proteinSelectContainer");
+            await renderMultiSelectDropdown("carbs", "carbSelectContainer");
+            await renderMultiSelectDropdown("freeMeals", "freeSelectContainer");
+            await renderMultiSelectDropdown("fruits", "fruitSelectContainer");
+
+            renderCatalogModal();
         }
 
         // ================= DELETE CATALOG =================
@@ -1307,12 +1540,13 @@
             const meal = {
                 date: date.value,
                 type: mealType.value,
-                base: baseSelect.value || null,
-                protein: proteinSelect.value || null,
-                carb: carbSelect.value || null,
+                base: getSelectedValues("baseSelectContainer"),
+                protein: getSelectedValues("proteinSelectContainer"),
+                carb: getSelectedValues("carbSelectContainer"),
+                fruit: getSelectedValues("fruitSelectContainer"),
                 hasSide: hasSide.value || null,
                 beverage: beverage.value || null,
-                freeMeal: freeSelect.value || null,
+                freeMeal: getSelectedValues("freeSelectContainer"),
                 classification: classification.value,
                 notes: notes.value
             };
@@ -1373,17 +1607,23 @@
             editingMealId = id;
             document.getElementById("date").value = meal.date || "";
             document.getElementById("mealType").value = meal.type || "cafeManha";
-            document.getElementById("baseSelect").value = meal.base || "";
-            document.getElementById("proteinSelect").value = meal.protein || "";
-            document.getElementById("carbSelect").value = meal.carb || "";
-            document.getElementById("freeSelect").value = meal.freeMeal || "";
+            
+            // Usar setTimeout para garantir que os dropdowns sejam atualizados corretamente
+            setTimeout(() => {
+                setSelectedValues("baseSelectContainer", meal.base || []);
+                setSelectedValues("proteinSelectContainer", meal.protein || []);
+                setSelectedValues("carbSelectContainer", meal.carb || []);
+                setSelectedValues("freeSelectContainer", meal.freeMeal || []);
+                setSelectedValues("fruitSelectContainer", meal.fruit || []);
+            }, 100);
+            
             document.getElementById("hasSide").value = meal.hasSide || "";
             document.getElementById("beverage").value = meal.beverage || "";
             document.getElementById("classification").value = meal.classification || "muitoBoa";
             document.getElementById("notes").value = meal.notes || "";
 
             document.getElementById("mealSection").scrollIntoView({ behavior: "smooth" });
-            const submitButton = document.querySelector("#mealForm button");
+            const submitButton = document.getElementById("saveMealButton");
             if (submitButton) {
                 submitButton.textContent = "✏️ Atualizar refeição";
             }
@@ -1393,7 +1633,12 @@
             editingMealId = null;
             document.getElementById("mealForm").reset();
             setDefaultDate();
-            const submitButton = document.querySelector("#mealForm button");
+            setSelectedValues("baseSelectContainer", []);
+            setSelectedValues("proteinSelectContainer", []);
+            setSelectedValues("carbSelectContainer", []);
+            setSelectedValues("freeSelectContainer", []);
+            setSelectedValues("fruitSelectContainer", []);
+            const submitButton = document.getElementById("saveMealButton");
             if (submitButton) {
                 submitButton.textContent = "💾 Salvar refeição";
             }
@@ -1474,7 +1719,7 @@
                     if (activeMealClassification && m.classification !== activeMealClassification) return false;
 
                     if (mealSearchTerm) {
-                        const haystack = `${m.notes || ""} ${formatMealType(m.type)} ${m.base || ""} ${m.protein || ""} ${m.carb || ""} ${m.freeMeal || ""}`.toLowerCase();
+                        const haystack = `${m.notes || ""} ${formatMealType(m.type)} ${formatValues(m.base)} ${formatValues(m.protein)} ${formatValues(m.carb)} ${formatValues(m.fruit)} ${formatValues(m.freeMeal)}`.toLowerCase();
                         if (!haystack.includes(mealSearchTerm)) return false;
                     }
 
@@ -1574,13 +1819,88 @@
             return map[type] || type;
         }
 
+        function buildMealDetailedDescription(meal) {
+            const parts = [];
+
+            // Tipo
+            const mealType = formatMealTypeForCopy(meal.type);
+            parts.push(`Tipo: ${mealType}`);
+
+            // Base
+            const bases = normalizeValues(meal.base);
+            if (bases.length > 0) {
+                parts.push(`Base: ${bases.join(" • ")}`);
+            }
+
+            // Proteínas
+            const proteins = normalizeValues(meal.protein);
+            if (proteins.length > 0) {
+                parts.push(`Proteínas: ${proteins.join(" • ")}`);
+            }
+
+            // Carboidratos
+            const carbs = normalizeValues(meal.carb);
+            if (carbs.length > 0) {
+                parts.push(`Carboidratos: ${carbs.join(" • ")}`);
+            }
+
+            // Frutas
+            const fruits = normalizeValues(meal.fruit);
+            if (fruits.length > 0) {
+                parts.push(`Frutas: ${fruits.join(" • ")}`);
+            }
+
+            // Refeições livres
+            const freeMeals = normalizeValues(meal.freeMeal);
+            if (freeMeals.length > 0) {
+                parts.push(`Refeições Livres: ${freeMeals.join(" • ")}`);
+            }
+
+            // Salada/Legumes (apenas se sim)
+            if (meal.hasSide === "sim") {
+                parts.push("Salada: Sim");
+            }
+
+            // Bebida
+            if (meal.beverage) {
+                const beverageName = getBeverageName(meal.beverage);
+                parts.push(`Bebida: ${beverageName}`);
+            }
+
+            // Classificação
+            const classification = getClassificationLabel(meal.classification);
+            parts.push(`Classificação: ${classification}`);
+
+            // Observações (em seção separada)
+            if (meal.notes) {
+                parts.push(`Obs: ${meal.notes}`);
+            }
+
+            return parts.join(" | ");
+        }
+
+        function getBeverageName(value) {
+            const map = {
+                agua: "Água",
+                cafe: "Café",
+                cha: "Chá",
+                suco: "Suco",
+                refrigeranteZero: "Refrigerante Zero",
+                refrigerante: "Refrigerante",
+                energetico: "Energético",
+                outro: "Outro"
+            };
+            return map[value] || value;
+        }
+
         function buildMealCopyDescription(meal) {
             const parts = [];
 
-            if (meal.base) parts.push(meal.base);
-            if (meal.protein) parts.push(meal.protein);
-            if (meal.carb) parts.push(meal.carb);
-            if (meal.freeMeal) parts.push(meal.freeMeal);
+            parts.push(...normalizeValues(meal.base));
+            parts.push(...normalizeValues(meal.protein));
+            parts.push(...normalizeValues(meal.carb));
+            parts.push(...normalizeValues(meal.fruit));
+            parts.push(...normalizeValues(meal.freeMeal));
             if (meal.hasSide === "sim") parts.push("Salada / legumes");
             if (meal.beverage) parts.push(formatBeverage(meal.beverage));
             if (meal.notes) parts.push(meal.notes);
@@ -1624,14 +1944,15 @@
             const sections = Object.entries(groupedByDate)
                 .sort((a, b) => new Date(b[0]) - new Date(a[0]))
                 .map(([date, dayMeals]) => {
+                    const dateHeader = `Data: ${formatDate(date)}`;
                     const lines = dayMeals
-                        .map(meal => `${formatMealTypeForCopy(meal.type)} | ${buildMealCopyDescription(meal)} | ${getClassificationLabel(meal.classification)}`)
-                        .join("\n");
+                        .map(meal => buildMealDetailedDescription(meal))
+                        .join("\n\n");
 
-                    return `${formatDate(date)}\n\n${lines}`;
+                    return `${dateHeader}\n\n${lines}`;
                 });
 
-            const text = sections.join("\n\n");
+            const text = sections.join("\n\n---\n\n");
 
             if (navigator.clipboard && navigator.clipboard.writeText) {
                 navigator.clipboard.writeText(text).then(() => {
@@ -1690,17 +2011,19 @@
 
                     <hr>
 
-                    ${m.base ? `<p><strong>🍚 Base:</strong> ${m.base}</p>` : ""}
+                    ${formatValues(m.base) ? `<p><strong>🍚 Base:</strong> ${formatValues(m.base)}</p>` : ""}
 
-                    ${m.protein ? `<p><strong>🥩 Proteína:</strong> ${m.protein}</p>` : ""}
+                    ${formatValues(m.protein) ? `<p><strong>🥩 Proteína:</strong> ${formatValues(m.protein)}</p>` : ""}
 
-                    ${m.carb ? `<p><strong>🍝 Carboidrato:</strong> ${m.carb}</p>` : ""}
+                    ${formatValues(m.carb) ? `<p><strong>🍝 Carboidrato:</strong> ${formatValues(m.carb)}</p>` : ""}
+
+                    ${formatValues(m.fruit) ? `<p><strong>🍌 Fruta:</strong> ${formatValues(m.fruit)}</p>` : ""}
 
                     ${m.hasSide ? `<p><strong>🥗 Salada/Legumes:</strong> ${m.hasSide === "sim" ? "Sim" : "Não"}</p>` : ""}
 
                     ${m.beverage ? `<p><strong>🥤 Bebida:</strong> ${formatBeverage(m.beverage)}</p>` : ""}
 
-                    ${m.freeMeal ? `<p><strong>🍔 Refeição Livre:</strong> ${m.freeMeal}</p>` : ""}
+                    ${formatValues(m.freeMeal) ? `<p><strong>🍔 Refeição Livre:</strong> ${formatValues(m.freeMeal)}</p>` : ""}
 
                     <p><strong>⭐ Classificação:</strong> ${formatClassification(m.classification)}</p>
 
@@ -1786,7 +2109,7 @@
 
         async function exportDatabase() {
 
-            const stores = ["bases", "proteins", "carbs", "freeMeals", "meals"];
+            const stores = ["bases", "proteins", "carbs", "freeMeals", "fruits", "meals"];
 
             const backup = {
                 version: 1,
@@ -1857,6 +2180,7 @@
             await restoreStore("proteins", backup.proteins || []);
             await restoreStore("carbs", backup.carbs || []);
             await restoreStore("freeMeals", backup.freeMeals || []);
+            await restoreStore("fruits", backup.fruits || []);
             await restoreStore("meals", backup.meals || []);
 
             alert("Backup restaurado com sucesso!");
@@ -1888,6 +2212,7 @@
             await clearStore("proteins");
             await clearStore("carbs");
             await clearStore("freeMeals");
+            await clearStore("fruits");
             await clearStore("meals");
 
         }
