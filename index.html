@@ -781,7 +781,7 @@
 
         <div class="hero-card">
             <div class="hero-copy">
-                <h1>🍽️ App Alimentação Pro</h1>
+                <h1>🍽️ Gerenciador Alimentação</h1>
                 <p>Seu painel completo para registrar refeições, acompanhar o catálogo e manter o controle com uma experiência mais fluida e visualmente organizada.</p>
             </div>
 
@@ -837,6 +837,10 @@
                 </div>
 
                 <div class="catalog-modal-body">
+                    <div style="display: flex; gap: 8px; margin-bottom: 10px;">
+                        <input type="text" id="catalogItemInput" placeholder="Nome do item" style="flex: 1; min-height: 42px; padding: 10px 12px; border-radius: 8px; border: 1px solid #d0d7de; font-size: 14px;">
+                        <button type="button" id="catalogItemAddButton" class="history-action-btn primary" style="padding: 10px 16px;">➕ Adicionar</button>
+                    </div>
                     <div id="catalogList" class="catalog-list"></div>
                     <div id="catalogPagination" class="pagination"></div>
                 </div>
@@ -888,33 +892,6 @@
                     </div>
                 </div>
             </div>
-        </section>
-
-        <section class="section-card" id="catalogSection">
-            <div class="section-heading">
-                <div>
-                    <h2>🍱 Cadastro de Alimentos</h2>
-                    <span>Adicione novos itens ao catálogo e organize sua base de escolha.</span>
-                </div>
-            </div>
-
-            <form id="catalogForm">
-                <div class="grid">
-                    <input id="base" placeholder="Base (Arroz e Feijão, Banana)" autocomplete="off" autocapitalize="words" inputmode="text">
-                    <input id="protein" placeholder="Proteína (Frango, Carne, Ovos, Pasta de amendoim)" autocomplete="off" autocapitalize="words" inputmode="text">
-                </div>
-
-                <div class="grid">
-                    <input id="carb" placeholder="Carboidrato (Macarrão, Batata)" autocomplete="off" autocapitalize="words" inputmode="text">
-                    <input id="freeMeal" placeholder="Refeição livre (Pizza, Hambúrguer)" autocomplete="off" autocapitalize="words" inputmode="text">
-                </div>
-
-                <div class="grid">
-                    <input id="fruit" placeholder="Fruta (Banana, Maçã, Mamão)" autocomplete="off" autocapitalize="words" inputmode="text">
-                </div>
-
-                <button>Salvar alimentos</button>
-            </form>
         </section>
 
         <section class="section-card" id="mealSection">
@@ -1055,7 +1032,7 @@
     </div>
 
     <footer class="app-footer" aria-label="Rodapé do aplicativo">
-        <span>V2.0.0</span>
+        <span>V2.1.0</span>
     </footer>
 
     <script>
@@ -1085,6 +1062,22 @@
 
             document.getElementById("catalogModal").classList.add("open");
             renderCatalogModal();
+
+            // Adicionar event listener para o botão de adicionar
+            const addButton = document.getElementById("catalogItemAddButton");
+            const addInput = document.getElementById("catalogItemInput");
+
+            if (addButton && addInput) {
+                addButton.onclick = () => {
+                    addItemToStore(activeCatalogStore, addInput.value);
+                };
+
+                addInput.onkeypress = (e) => {
+                    if (e.key === "Enter") {
+                        addItemToStore(activeCatalogStore, addInput.value);
+                    }
+                };
+            }
         }
 
         function closeCatalogModal() {
@@ -1098,6 +1091,22 @@
                 btn.classList.toggle("active", btn.getAttribute("data-store") === store);
             });
             renderCatalogModal();
+
+            // Atualizar event listener para o novo store
+            const addButton = document.getElementById("catalogItemAddButton");
+            const addInput = document.getElementById("catalogItemInput");
+
+            if (addButton && addInput) {
+                addButton.onclick = () => {
+                    addItemToStore(activeCatalogStore, addInput.value);
+                };
+
+                addInput.onkeypress = (e) => {
+                    if (e.key === "Enter") {
+                        addItemToStore(activeCatalogStore, addInput.value);
+                    }
+                };
+            }
         }
 
         document.addEventListener("keydown", e => {
@@ -1278,25 +1287,26 @@
         }
 
         // ================= CATALOG =================
-        document.getElementById("catalogForm").addEventListener("submit", e => {
-            e.preventDefault();
-
-            addItem("bases", base.value);
-            addItem("proteins", protein.value);
-            addItem("carbs", carb.value);
-            addItem("freeMeals", freeMeal.value);
-            addItem("fruits", fruit.value);
-
-            e.target.reset();
-            setTimeout(loadCatalog, 200);
-        });
-
-        function addItem(store, value) {
-            if (!value) return;
+        function addItemToStore(store, value) {
+            if (!value || !value.trim()) {
+                alert("Por favor, digite um nome para o item.");
+                return;
+            }
 
             const tx = db.transaction(store, "readwrite");
-            tx.objectStore(store).add({ name: value });
+            const store_obj = tx.objectStore(store);
+            store_obj.add({ name: value.trim() });
+
+            tx.oncomplete = () => {
+                document.getElementById("catalogItemInput").value = "";
+                renderCatalogModal();
+            };
+
+            tx.onerror = () => {
+                alert("Erro ao adicionar item.");
+            };
         }
+
 
         const multiSelectState = {
             baseSelectContainer: [],
@@ -1490,6 +1500,22 @@
             });
 
             renderCatalogPagination(items.length);
+
+            // Atualizar event listeners
+            const addButton = document.getElementById("catalogItemAddButton");
+            const addInput = document.getElementById("catalogItemInput");
+
+            if (addButton && addInput) {
+                addButton.onclick = () => {
+                    addItemToStore(activeCatalogStore, addInput.value);
+                };
+
+                addInput.onkeypress = (e) => {
+                    if (e.key === "Enter") {
+                        addItemToStore(activeCatalogStore, addInput.value);
+                    }
+                };
+            }
         }
 
         function renderCatalogPagination(totalItems) {
