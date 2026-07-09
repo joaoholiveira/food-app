@@ -583,6 +583,47 @@
             line-height: 1.4;
         }
 
+        .catalog-item-actions {
+            display: flex;
+            gap: 6px;
+            align-items: center;
+        }
+
+        .catalog-action-btn {
+            margin-top: 0;
+            padding: 6px 8px;
+            font-size: 13px;
+            line-height: 1;
+            min-width: 32px;
+            min-height: 32px;
+            width: auto;
+            background: transparent;
+            color: #b8860b;
+            border: 1px solid #facc15;
+            border-radius: 999px;
+            cursor: pointer;
+            transition: transform 0.2s ease, background 0.2s ease, color 0.2s ease;
+            flex-shrink: 0;
+        }
+
+        .catalog-action-btn:hover {
+            background: #fff8d6;
+            color: #a16207;
+            transform: translateY(-1px);
+        }
+
+        .catalog-action-btn--delete {
+            background: #ef5350;
+            color: white;
+            border-color: #ef5350;
+        }
+
+        .catalog-action-btn--delete:hover {
+            background: #d64545;
+            color: white;
+            border-color: #d64545;
+        }
+
         .empty-state {
             text-align: center;
             padding: 18px;
@@ -788,7 +829,9 @@
             <div class="hero-actions">
                 <button type="button" onclick="openBackupModal()">⚙️ Configurações</button>
                 <button type="button" onclick="openCatalogModal('bases')">🍽️ Catálogo</button>
-                <button type="button" onclick="document.getElementById('mealSection').scrollIntoView({behavior:'smooth'})">➕ Registrar refeição</button>
+                <button type="button"
+                    onclick="document.getElementById('mealSection').scrollIntoView({behavior:'smooth'})">➕ Registrar
+                    refeição</button>
             </div>
         </div>
 
@@ -796,7 +839,8 @@
             <div class="modal-content">
                 <div class="modal-header">
                     <h2 style="margin:0;">💾 Backup e Sincronização</h2>
-                    <button type="button" class="modal-close" onclick="closeBackupModal()" aria-label="Fechar">✕</button>
+                    <button type="button" class="modal-close" onclick="closeBackupModal()"
+                        aria-label="Fechar">✕</button>
                 </div>
 
                 <p>
@@ -825,21 +869,31 @@
             <div class="modal-content catalog-modal">
                 <div class="modal-header">
                     <h2 style="margin:0;">🍽️ Catálogo</h2>
-                    <button type="button" class="modal-close" onclick="closeCatalogModal()" aria-label="Fechar">✕</button>
+                    <button type="button" class="modal-close" onclick="closeCatalogModal()"
+                        aria-label="Fechar">✕</button>
                 </div>
 
                 <div class="catalog-tabs">
-                    <button type="button" class="tab-btn active" data-store="bases" onclick="changeCatalogTab('bases')">Bases</button>
-                    <button type="button" class="tab-btn" data-store="proteins" onclick="changeCatalogTab('proteins')">Proteínas</button>
-                    <button type="button" class="tab-btn" data-store="carbs" onclick="changeCatalogTab('carbs')">Carboidratos</button>
-                    <button type="button" class="tab-btn" data-store="freeMeals" onclick="changeCatalogTab('freeMeals')">Livres</button>
-                    <button type="button" class="tab-btn" data-store="fruits" onclick="changeCatalogTab('fruits')">Frutas</button>
+                    <button type="button" class="tab-btn active" data-store="bases"
+                        onclick="changeCatalogTab('bases')">Bases</button>
+                    <button type="button" class="tab-btn" data-store="proteins"
+                        onclick="changeCatalogTab('proteins')">Proteínas</button>
+                    <button type="button" class="tab-btn" data-store="carbs"
+                        onclick="changeCatalogTab('carbs')">Carboidratos</button>
+                    <button type="button" class="tab-btn" data-store="freeMeals"
+                        onclick="changeCatalogTab('freeMeals')">Livres</button>
+                    <button type="button" class="tab-btn" data-store="fruits"
+                        onclick="changeCatalogTab('fruits')">Frutas</button>
                 </div>
 
                 <div class="catalog-modal-body">
                     <div style="display: flex; gap: 8px; margin-bottom: 10px;">
-                        <input type="text" id="catalogItemInput" placeholder="Nome do item" style="flex: 1; min-height: 42px; padding: 10px 12px; border-radius: 8px; border: 1px solid #d0d7de; font-size: 14px;">
-                        <button type="button" id="catalogItemAddButton" class="history-action-btn primary" style="padding: 10px 16px;">➕ Adicionar</button>
+                        <input type="text" id="catalogItemInput" placeholder="Nome do item"
+                            style="flex: 1; min-height: 42px; padding: 10px 12px; border-radius: 8px; border: 1px solid #d0d7de; font-size: 14px;">
+                        <button type="button" id="catalogItemAddButton" class="history-action-btn primary"
+                            style="padding: 10px 16px;">➕ Adicionar</button>
+                        <button type="button" id="catalogItemCancelButton" class="history-action-btn secondary"
+                            onclick="cancelCatalogEdit()" style="display:none; padding: 10px 16px;">✕ Cancelar</button>
                     </div>
                     <div id="catalogList" class="catalog-list"></div>
                     <div id="catalogPagination" class="pagination"></div>
@@ -904,86 +958,93 @@
 
             <form id="mealForm">
 
-            <label for="date"><strong>📅 Data da refeição</strong></label>
-            <input type="date" id="date">
+                <label for="date"><strong>📅 Data da refeição</strong></label>
+                <input type="date" id="date">
 
-            <label for="mealType"><strong>🍽️ Tipo da refeição</strong></label>
-            <select id="mealType">
-                <option value="cafeManha">Café da manhã</option>
-                <option value="almoco">Almoço</option>
-                <option value="cafeTarde">Café da tarde</option>
-                <option value="jantar">Jantar</option>
-                <option value="lanche">Lanche / Extra</option>
-            </select>
+                <label for="mealType"><strong>🍽️ Tipo da refeição</strong></label>
+                <select id="mealType">
+                    <option value="cafeManha">Café da manhã</option>
+                    <option value="almoco">Almoço</option>
+                    <option value="cafeTarde">Café da tarde</option>
+                    <option value="jantar">Jantar</option>
+                    <option value="lanche">Lanche / Extra</option>
+                </select>
 
-            <div class="grid">
+                <div class="grid">
 
-                <div>
-                    <label for="baseSelectContainer"><strong>🍚 Base</strong> <span class="label-hint">(Selecione um ou mais itens)</span></label>
-                    <div class="multi-select-container" id="baseSelectContainer"></div>
+                    <div>
+                        <label for="baseSelectContainer"><strong>🍚 Base</strong> <span class="label-hint">(Selecione um
+                                ou mais itens)</span></label>
+                        <div class="multi-select-container" id="baseSelectContainer"></div>
+                    </div>
+
+                    <div>
+                        <label for="proteinSelectContainer"><strong>🥩 Proteína</strong> <span
+                                class="label-hint">(Selecione um ou mais itens)</span></label>
+                        <div class="multi-select-container" id="proteinSelectContainer"></div>
+                    </div>
+
+                </div>
+
+                <div class="grid">
+
+                    <div>
+                        <label for="carbSelectContainer"><strong>🍝 Carboidrato</strong> <span
+                                class="label-hint">(Selecione um ou mais itens)</span></label>
+                        <div class="multi-select-container" id="carbSelectContainer"></div>
+                    </div>
+
+                    <div>
+                        <label for="freeSelectContainer"><strong>🍔 Refeição livre</strong> <span
+                                class="label-hint">(Selecione um ou mais itens)</span></label>
+                        <div class="multi-select-container" id="freeSelectContainer"></div>
+                    </div>
+
                 </div>
 
                 <div>
-                    <label for="proteinSelectContainer"><strong>🥩 Proteína</strong> <span class="label-hint">(Selecione um ou mais itens)</span></label>
-                    <div class="multi-select-container" id="proteinSelectContainer"></div>
+                    <label for="fruitSelectContainer"><strong>🍌 Fruta</strong> <span class="label-hint">(Selecione um
+                            ou mais itens)</span></label>
+                    <div class="multi-select-container" id="fruitSelectContainer"></div>
                 </div>
 
-            </div>
+                <label for="hasSide"><strong>🥗 Ingeriu salada ou legumes?</strong></label>
+                <select id="hasSide">
+                    <option value="">Selecione...</option>
+                    <option value="sim">Sim 🥗</option>
+                    <option value="nao">Não ❌</option>
+                </select>
 
-            <div class="grid">
+                <label for="hasSide"><strong>🥤 Ingeriu alguma bebida?</strong></label>
+                <select id="beverage">
+                    <option value="">— Bebida —</option>
+                    <option value="agua">💧 Água</option>
+                    <option value="cafe">☕ Café</option>
+                    <option value="cha">🍵 Chá</option>
+                    <option value="suco">🧃 Suco</option>
+                    <option value="refrigeranteZero">🥤 Refrigerante Zero</option>
+                    <option value="refrigerante">🥤 Refrigerante</option>
+                    <option value="energetico">⚡ Energético</option>
+                    <option value="outro">🥛 Outro</option>
+                </select>
 
-                <div>
-                    <label for="carbSelectContainer"><strong>🍝 Carboidrato</strong> <span class="label-hint">(Selecione um ou mais itens)</span></label>
-                    <div class="multi-select-container" id="carbSelectContainer"></div>
-                </div>
+                <label for="classification"><strong>⭐ Como você avalia essa refeição?</strong></label>
+                <select id="classification">
+                    <option value="muitoBoa">🔥 Muito boa</option>
+                    <option value="boa">✅ Boa</option>
+                    <option value="intermediaria">⚖️ Intermediária</option>
+                    <option value="podeMelhorar">🔶 Pode melhorar</option>
+                    <option value="livre">🍔 Livre</option>
+                </select>
 
-                <div>
-                    <label for="freeSelectContainer"><strong>🍔 Refeição livre</strong> <span class="label-hint">(Selecione um ou mais itens)</span></label>
-                    <div class="multi-select-container" id="freeSelectContainer"></div>
-                </div>
+                <label for="notes"><strong>📝 Observações</strong></label>
+                <textarea id="notes"
+                    placeholder="Ex.: Pode ser informado quantidade(Ex.: 10g de Pasta de amendoim, 100g de filé de frango, 3 Esfihas) ou Almoço fora de casa, pouca fome."
+                    rows="3" autocomplete="off" autocapitalize="sentences"></textarea>
 
-            </div>
+                <button id="saveMealButton">💾 Salvar refeição</button>
 
-            <div>
-                <label for="fruitSelectContainer"><strong>🍌 Fruta</strong> <span class="label-hint">(Selecione um ou mais itens)</span></label>
-                <div class="multi-select-container" id="fruitSelectContainer"></div>
-            </div>
-
-            <label for="hasSide"><strong>🥗 Ingeriu salada ou legumes?</strong></label>
-            <select id="hasSide">
-                <option value="">Selecione...</option>
-                <option value="sim">Sim 🥗</option>
-                <option value="nao">Não ❌</option>
-            </select>
-
-            <label for="hasSide"><strong>🥤 Ingeriu alguma bebida?</strong></label>
-            <select id="beverage">
-                <option value="">— Bebida —</option>
-                <option value="agua">💧 Água</option>
-                <option value="cafe">☕ Café</option>
-                <option value="cha">🍵 Chá</option>
-                <option value="suco">🧃 Suco</option>
-                <option value="refrigeranteZero">🥤 Refrigerante Zero</option>
-                <option value="refrigerante">🥤 Refrigerante</option>
-                <option value="energetico">⚡ Energético</option>
-                <option value="outro">🥛 Outro</option>
-            </select>
-
-            <label for="classification"><strong>⭐ Como você avalia essa refeição?</strong></label>
-            <select id="classification">
-                <option value="muitoBoa">🔥 Muito boa</option>
-                <option value="boa">✅ Boa</option>
-                <option value="intermediaria">⚖️ Intermediária</option>
-                <option value="podeMelhorar">🔶 Pode melhorar</option>
-                <option value="livre">🍔 Livre</option>
-            </select>
-
-            <label for="notes"><strong>📝 Observações</strong></label>
-            <textarea id="notes" placeholder="Ex.: Pode ser informado quantidade(Ex.: 10g de Pasta de amendoim, 100g de filé de frango, 3 Esfihas) ou Almoço fora de casa, pouca fome." rows="3" autocomplete="off" autocapitalize="sentences"></textarea>
-
-            <button id="saveMealButton">💾 Salvar refeição</button>
-
-        </form>
+            </form>
         </section>
 
         <section class="section-card" id="historySection">
@@ -1010,18 +1071,22 @@
                         <option value="podeMelhorar">Pode melhorar</option>
                         <option value="livre">Livre</option>
                     </select>
-                    <input id="mealSearch" class="subtle-input" type="text" placeholder="Buscar por refeição, tipo ou observação" oninput="handleMealSearch(event)">
+                    <input id="mealSearch" class="subtle-input" type="text"
+                        placeholder="Buscar por refeição, tipo ou observação" oninput="handleMealSearch(event)">
                 </div>
             </div>
 
             <div class="history-toolbar">
                 <div class="history-actions">
-                    <button type="button" class="history-action-btn primary" id="dateFilterButton" onclick="openDateFilterPicker()">📅 Filtrar por dia</button>
-                    <button type="button" class="history-action-btn secondary" id="clearDateFilterButton" onclick="clearDateFilter()" style="display:none;">✕ Limpar</button>
+                    <button type="button" class="history-action-btn primary" id="dateFilterButton"
+                        onclick="openDateFilterPicker()">📅 Filtrar por dia</button>
+                    <button type="button" class="history-action-btn secondary" id="clearDateFilterButton"
+                        onclick="clearDateFilter()" style="display:none;">✕ Limpar</button>
                     <input type="date" id="dateFilterInput" style="display:none" onchange="applyDateFilter(this.value)">
                 </div>
                 <div class="history-actions">
-                    <button type="button" class="history-action-btn" onclick="copyVisibleMeals()">📋 Copiar refeições</button>
+                    <button type="button" class="history-action-btn" onclick="copyVisibleMeals()">📋 Copiar
+                        refeições</button>
                 </div>
             </div>
 
@@ -1032,7 +1097,7 @@
     </div>
 
     <footer class="app-footer" aria-label="Rodapé do aplicativo">
-        <span>V2.1.1</span>
+        <span>V2.2.0</span>
     </footer>
 
     <script>
@@ -1055,6 +1120,7 @@
         function openCatalogModal(store = "bases") {
             activeCatalogStore = store;
             activeCatalogPage = 1;
+            resetCatalogEditor();
 
             document.querySelectorAll(".tab-btn").forEach(btn => {
                 btn.classList.toggle("active", btn.getAttribute("data-store") === store);
@@ -1062,51 +1128,21 @@
 
             document.getElementById("catalogModal").classList.add("open");
             renderCatalogModal();
-
-            // Adicionar event listener para o botão de adicionar
-            const addButton = document.getElementById("catalogItemAddButton");
-            const addInput = document.getElementById("catalogItemInput");
-
-            if (addButton && addInput) {
-                addButton.onclick = () => {
-                    addItemToStore(activeCatalogStore, addInput.value);
-                };
-
-                addInput.onkeypress = (e) => {
-                    if (e.key === "Enter") {
-                        addItemToStore(activeCatalogStore, addInput.value);
-                    }
-                };
-            }
         }
 
         function closeCatalogModal() {
+            resetCatalogEditor();
             document.getElementById("catalogModal").classList.remove("open");
         }
 
         function changeCatalogTab(store) {
             activeCatalogStore = store;
             activeCatalogPage = 1;
+            resetCatalogEditor();
             document.querySelectorAll(".tab-btn").forEach(btn => {
                 btn.classList.toggle("active", btn.getAttribute("data-store") === store);
             });
             renderCatalogModal();
-
-            // Atualizar event listener para o novo store
-            const addButton = document.getElementById("catalogItemAddButton");
-            const addInput = document.getElementById("catalogItemInput");
-
-            if (addButton && addInput) {
-                addButton.onclick = () => {
-                    addItemToStore(activeCatalogStore, addInput.value);
-                };
-
-                addInput.onkeypress = (e) => {
-                    if (e.key === "Enter") {
-                        addItemToStore(activeCatalogStore, addInput.value);
-                    }
-                };
-            }
         }
 
         document.addEventListener("keydown", e => {
@@ -1243,7 +1279,7 @@
 
         // ================= CATALOG INICIAL =================
         const initialCatalog = {
-            bases: ["Arroz", "Feijão", "Arroz e Feijão", "Banana", "Pão Francês"],
+            bases: ["Arroz", "Feijão", "Banana", "Pão Francês"],
             proteins: [
                 "Filé de Frango Grelhado",
                 "Contra Filé Grelhado",
@@ -1253,10 +1289,10 @@
             ],
             carbs: [
                 "Batata Palito (Air Fryer)",
-                "Macarrão a Bolonhesa",
+                "Macarrão á Bolonhesa",
                 "Macarrão Alho e Óleo"
             ],
-            freeMeals: ["Hamburguer", "Pizza", "Lanche", "Esfiha", "Cachorro Quente", "Sorvete", "Bolo"],
+            freeMeals: ["Hambúrguer", "Pizza", "Cachorro Quente", "Sorvete", "Bolo"],
             fruits: ["Banana", "Maçã", "Mamão", "Manga", "Uva", "Pera"]
         };
 
@@ -1287,19 +1323,83 @@
         }
 
         // ================= CATALOG =================
+        let editingCatalogItem = null;
+
+        function escapeHtml(value) {
+            return String(value)
+                .replace(/&/g, "&amp;")
+                .replace(/</g, "&lt;")
+                .replace(/>/g, "&gt;")
+                .replace(/\"/g, "&quot;")
+                .replace(/'/g, "&#39;");
+        }
+
+        function resetCatalogEditor() {
+            editingCatalogItem = null;
+            const input = document.getElementById("catalogItemInput");
+            const addButton = document.getElementById("catalogItemAddButton");
+            const cancelButton = document.getElementById("catalogItemCancelButton");
+
+            if (input) input.value = "";
+            if (addButton) addButton.innerHTML = "➕ Adicionar";
+            if (cancelButton) cancelButton.style.display = "none";
+        }
+
+        function editCatalogItem(store, id, encodedName) {
+            const name = decodeURIComponent(encodedName || "");
+            editingCatalogItem = { store, id };
+            const input = document.getElementById("catalogItemInput");
+            const addButton = document.getElementById("catalogItemAddButton");
+            const cancelButton = document.getElementById("catalogItemCancelButton");
+
+            if (input) {
+                input.value = name || "";
+                input.focus();
+            }
+
+            if (addButton) addButton.innerHTML = "💾 Salvar";
+            if (cancelButton) cancelButton.style.display = "inline-flex";
+        }
+
+        function cancelCatalogEdit() {
+            resetCatalogEditor();
+        }
+
+        async function refreshCatalogAndMealSelectors() {
+            await loadCatalog();
+        }
+
         function addItemToStore(store, value) {
-            if (!value || !value.trim()) {
+            const trimmedValue = value ? value.trim() : "";
+
+            if (!trimmedValue) {
                 alert("Por favor, digite um nome para o item.");
+                return;
+            }
+
+            if (editingCatalogItem && editingCatalogItem.store === store) {
+                const tx = db.transaction(store, "readwrite");
+                const store_obj = tx.objectStore(store);
+                store_obj.put({ id: editingCatalogItem.id, name: trimmedValue });
+
+                tx.oncomplete = () => {
+                    resetCatalogEditor();
+                    refreshCatalogAndMealSelectors();
+                };
+
+                tx.onerror = () => {
+                    alert("Erro ao atualizar item.");
+                };
                 return;
             }
 
             const tx = db.transaction(store, "readwrite");
             const store_obj = tx.objectStore(store);
-            store_obj.add({ name: value.trim() });
+            store_obj.add({ name: trimmedValue });
 
             tx.oncomplete = () => {
-                document.getElementById("catalogItemInput").value = "";
-                renderCatalogModal();
+                resetCatalogEditor();
+                refreshCatalogAndMealSelectors();
             };
 
             tx.onerror = () => {
@@ -1387,6 +1487,16 @@
             });
         }
 
+        function syncMultiSelectStateWithCatalog(containerId, items) {
+            const availableNames = new Set((items || []).map(item => item.name).filter(Boolean));
+            const currentSelection = multiSelectState[containerId] || [];
+            const filteredSelection = currentSelection.filter(value => availableNames.has(value));
+
+            if (filteredSelection.length !== currentSelection.length) {
+                multiSelectState[containerId] = filteredSelection;
+            }
+        }
+
         function renderMultiSelectDropdown(storeName, containerId) {
             return new Promise(async (resolve) => {
                 const items = await getCatalogItems(storeName);
@@ -1396,6 +1506,8 @@
                     resolve();
                     return;
                 }
+
+                syncMultiSelectStateWithCatalog(containerId, items);
 
                 container.innerHTML = `
                     <button type="button" class="multi-select-button" onclick="toggleMultiSelectDropdown('${containerId}')">
@@ -1440,7 +1552,7 @@
             await renderMultiSelectDropdown("freeMeals", "freeSelectContainer");
             await renderMultiSelectDropdown("fruits", "fruitSelectContainer");
 
-            renderCatalogModal();
+            await renderCatalogModal();
         }
 
         // ================= DELETE CATALOG =================
@@ -1448,8 +1560,8 @@
             const tx = db.transaction(store, "readwrite");
             tx.objectStore(store).delete(id);
             tx.oncomplete = () => {
-                loadCatalog();
-                renderCatalogModal();
+                resetCatalogEditor();
+                refreshCatalogAndMealSelectors();
             };
         }
 
@@ -1487,13 +1599,22 @@
                 const div = document.createElement("div");
                 div.className = "catalog-item";
 
+                const encodedName = encodeURIComponent(item.name || "");
+
                 div.innerHTML = `
-                    <span>${item.name}</span>
-                    <button class="small-btn"
-                        onclick="deleteCatalogItem('${activeCatalogStore}', ${item.id})"
-                        aria-label="Excluir item">
-                        🗑️
-                    </button>
+                    <span>${escapeHtml(item.name)}</span>
+                    <div class="catalog-item-actions">
+                        <button class="catalog-action-btn"
+                            onclick="editCatalogItem('${activeCatalogStore}', ${item.id}, '${encodedName}')"
+                            aria-label="Editar item">
+                            ✏️
+                        </button>
+                        <button class="catalog-action-btn catalog-action-btn--delete"
+                            onclick="deleteCatalogItem('${activeCatalogStore}', ${item.id})"
+                            aria-label="Excluir item">
+                            🗑️
+                        </button>
+                    </div>
                 `;
 
                 list.appendChild(div);
@@ -1504,6 +1625,7 @@
             // Atualizar event listeners
             const addButton = document.getElementById("catalogItemAddButton");
             const addInput = document.getElementById("catalogItemInput");
+            const cancelButton = document.getElementById("catalogItemCancelButton");
 
             if (addButton && addInput) {
                 addButton.onclick = () => {
@@ -1516,23 +1638,46 @@
                     }
                 };
             }
+
+            if (cancelButton) {
+                cancelButton.onclick = cancelCatalogEdit;
+            }
         }
 
         function renderCatalogPagination(totalItems) {
+
             const totalPages = Math.ceil(totalItems / CATALOG_ITEMS_PER_PAGE);
             const pagination = document.getElementById("catalogPagination");
 
-            if (!pagination || totalPages <= 1) {
+            if (!pagination) return;
+
+            if (totalPages <= 1) {
                 pagination.innerHTML = "";
                 return;
             }
 
             pagination.innerHTML = "";
 
+            pagination.style.display = "flex";
+            pagination.style.justifyContent = "space-between";
+            pagination.style.alignItems = "center";
+            pagination.style.gap = "12px";
+            pagination.style.marginTop = "20px";
+            pagination.style.width = "100%";
+
             const prevBtn = document.createElement("button");
             prevBtn.type = "button";
-            prevBtn.textContent = "◀ Anterior";
+            prevBtn.textContent = "◀";
             prevBtn.disabled = activeCatalogPage === 1;
+            prevBtn.style.width = "42px";
+            prevBtn.style.minWidth = "42px";
+            prevBtn.style.height = "42px";
+            prevBtn.style.padding = "0";
+            prevBtn.style.borderRadius = "10px";
+            prevBtn.style.display = "flex";
+            prevBtn.style.alignItems = "center";
+            prevBtn.style.justifyContent = "center";
+
             prevBtn.onclick = () => {
                 if (activeCatalogPage > 1) {
                     activeCatalogPage--;
@@ -1542,11 +1687,23 @@
 
             const pageInfo = document.createElement("strong");
             pageInfo.textContent = `Página ${activeCatalogPage} de ${totalPages}`;
+            pageInfo.style.flex = "1";
+            pageInfo.style.textAlign = "center";
+            pageInfo.style.fontSize = "15px";
 
             const nextBtn = document.createElement("button");
             nextBtn.type = "button";
-            nextBtn.textContent = "Próxima ▶";
+            nextBtn.textContent = "▶";
             nextBtn.disabled = activeCatalogPage === totalPages;
+            nextBtn.style.width = "42px";
+            nextBtn.style.minWidth = "42px";
+            nextBtn.style.height = "42px";
+            nextBtn.style.padding = "0";
+            nextBtn.style.borderRadius = "10px";
+            nextBtn.style.display = "flex";
+            nextBtn.style.alignItems = "center";
+            nextBtn.style.justifyContent = "center";
+
             nextBtn.onclick = () => {
                 if (activeCatalogPage < totalPages) {
                     activeCatalogPage++;
@@ -1633,7 +1790,7 @@
             editingMealId = id;
             document.getElementById("date").value = meal.date || "";
             document.getElementById("mealType").value = meal.type || "cafeManha";
-            
+
             // Usar setTimeout para garantir que os dropdowns sejam atualizados corretamente
             setTimeout(() => {
                 setSelectedValues("baseSelectContainer", meal.base || []);
@@ -1642,7 +1799,7 @@
                 setSelectedValues("freeSelectContainer", meal.freeMeal || []);
                 setSelectedValues("fruitSelectContainer", meal.fruit || []);
             }, 100);
-            
+
             document.getElementById("hasSide").value = meal.hasSide || "";
             document.getElementById("beverage").value = meal.beverage || "";
             document.getElementById("classification").value = meal.classification || "muitoBoa";
@@ -2056,7 +2213,7 @@
                     ${m.notes ? `<p><strong>📝 Observações:</strong><br>${m.notes}</p>` : ""}
 
                     <div class="grid" style="margin-top:10px; gap:8px;">
-                        <button class="delete-btn"
+                        <button class="catalog-action-btn"
                             onclick="editMeal(${m.id})">
                             ✏️ Editar
                         </button>
@@ -2295,27 +2452,51 @@
             const div = document.createElement("div");
 
             div.style.display = "flex";
-            div.style.justifyContent = "center";
+            div.style.justifyContent = "space-between";
             div.style.alignItems = "center";
-            div.style.gap = "20px";
+            div.style.gap = "12px";
             div.style.marginTop = "20px";
 
             div.innerHTML = `
 
         <button
+            style="
+                width:42px;
+                min-width:42px;
+                height:42px;
+                padding:0;
+                border-radius:10px;
+                display:flex;
+                align-items:center;
+                justify-content:center;
+            "
             ${currentPage == 1 ? "disabled" : ""}
             onclick="changePage(-1)">
-            ◀ Anterior
+            ◀
         </button>
 
-        <strong>
+        <strong style="
+            flex:1;
+            text-align:center;
+            font-size:15px;
+        ">
             Página ${currentPage} de ${totalPages}
         </strong>
 
         <button
+            style="
+                width:42px;
+                min-width:42px;
+                height:42px;
+                padding:0;
+                border-radius:10px;
+                display:flex;
+                align-items:center;
+                justify-content:center;
+            "
             ${currentPage == totalPages ? "disabled" : ""}
             onclick="changePage(1)">
-            Próxima ▶
+            ▶
         </button>
 
     `;
