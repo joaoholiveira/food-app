@@ -884,6 +884,8 @@
                         onclick="changeCatalogTab('freeMeals')">Livres</button>
                     <button type="button" class="tab-btn" data-store="fruits"
                         onclick="changeCatalogTab('fruits')">Frutas</button>
+                    <button type="button" class="tab-btn" data-store="salads"
+                        onclick="changeCatalogTab('salads')">Saladas e Legumes</button>
                 </div>
 
                 <div class="catalog-modal-body">
@@ -911,6 +913,14 @@
                     <span>Ver Dashboard</span>
                     <span class="toggle-icon">▾</span>
                 </button>
+            </div>
+
+            <div style="margin-bottom: 12px;">
+                <label for="monthFilter" style="margin-bottom: 6px; font-weight: 600;">📅 Período</label>
+                <select id="monthFilter" onchange="changeMonthFilter(this.value)">
+                    <option value="all">📅 Todos os períodos</option>
+                    <option value="current">📅 Mês Atual</option>
+                </select>
             </div>
 
             <div class="dashboard-panel" id="dashboardPanel">
@@ -1008,14 +1018,12 @@
                     <div class="multi-select-container" id="fruitSelectContainer"></div>
                 </div>
 
-                <label for="hasSide"><strong>🥗 Ingeriu salada ou legumes?</strong></label>
-                <select id="hasSide">
-                    <option value="">Selecione...</option>
-                    <option value="sim">Sim 🥗</option>
-                    <option value="nao">Não ❌</option>
-                </select>
+                <div>
+                    <label for="saladSelectContainer"><strong>🥗 Saladas e Legumes</strong> <span class="label-hint">(Selecione um ou mais itens)</span></label>
+                    <div class="multi-select-container" id="saladSelectContainer"></div>
+                </div>
 
-                <label for="hasSide"><strong>🥤 Ingeriu alguma bebida?</strong></label>
+                <label for="beverage"><strong>🥤 Ingeriu alguma bebida?</strong></label>
                 <select id="beverage">
                     <option value="">— Bebida —</option>
                     <option value="agua">💧 Água</option>
@@ -1097,7 +1105,7 @@
     </div>
 
     <footer class="app-footer" aria-label="Rodapé do aplicativo">
-        <span>V2.2.2</span>
+        <span>V3.0.0</span>
     </footer>
 
     <script>
@@ -1203,15 +1211,16 @@
         let activeMealClassification = "";
         let mealSearchTerm = "";
         let activeDateFilter = "";
+        let selectedMonth = "current";
         // ================= DB =================
         let db;
 
-        const request = indexedDB.open("foodDB", 6);
+        const request = indexedDB.open("foodDB", 7);
 
         request.onupgradeneeded = function (e) {
             db = e.target.result;
 
-            ["meals", "bases", "proteins", "carbs", "freeMeals", "fruits"].forEach(s => {
+            ["meals", "bases", "proteins", "carbs", "freeMeals", "fruits", "salads"].forEach(s => {
                 if (!db.objectStoreNames.contains(s)) {
                     db.createObjectStore(s, { keyPath: "id", autoIncrement: true });
                 }
@@ -1277,6 +1286,72 @@
             }
         }
 
+        function getCurrentMonth() {
+            return getBrazilDateString().slice(0, 7);
+        }
+
+        function formatMonthLabel(monthValue) {
+            if (!monthValue) return "";
+            const [year, month] = monthValue.split("-");
+            const months = [
+                "Janeiro", "Fevereiro", "Março", "Abril", "Maio", "Junho",
+                "Julho", "Agosto", "Setembro", "Outubro", "Novembro", "Dezembro"
+            ];
+            const monthIndex = Number(month) - 1;
+            return `${months[monthIndex] || month}/${year}`;
+        }
+
+        function filterMealsByMonth(month) {
+            if (!month || month === "all") {
+                return [...allMeals];
+            }
+
+            const effectiveMonth = month === "current" ? getCurrentMonth() : month;
+            return allMeals.filter(meal => meal.date && meal.date.startsWith(effectiveMonth));
+        }
+
+        function loadAvailableMonths() {
+            const monthFilter = document.getElementById("monthFilter");
+            if (!monthFilter) return;
+
+            const months = [...new Set(allMeals.filter(meal => meal.date).map(meal => meal.date.slice(0, 7)))].sort((a, b) => b.localeCompare(a));
+            const currentMonthValue = getCurrentMonth();
+
+            monthFilter.innerHTML = "";
+            monthFilter.appendChild(new Option("📅 Todos os períodos", "all"));
+            monthFilter.appendChild(new Option("📅 Mês Atual", "current"));
+
+            months.forEach(monthValue => {
+                monthFilter.appendChild(new Option(formatMonthLabel(monthValue), monthValue));
+            });
+
+            if (selectedMonth === "all") {
+                monthFilter.value = "all";
+            } else if (selectedMonth === "current") {
+                monthFilter.value = "current";
+            } else if (months.includes(selectedMonth)) {
+                monthFilter.value = selectedMonth;
+            } else if (months.includes(currentMonthValue)) {
+                selectedMonth = currentMonthValue;
+                monthFilter.value = currentMonthValue;
+            } else {
+                selectedMonth = "current";
+                monthFilter.value = "current";
+            }
+        }
+
+        function changeMonthFilter(month) {
+            selectedMonth = month === "current" ? "current" : month;
+            currentPage = 1;
+            refreshDashboard();
+        }
+
+        function refreshDashboard() {
+            const filteredMeals = filterMealsByMonth(selectedMonth);
+            render();
+            dashboard(filteredMeals);
+        }
+
         // ================= CATALOG INICIAL =================
         const initialCatalog = {
             bases: ["Arroz", "Feijão", "Pão Francês", "Torrada Integral"],
@@ -1318,7 +1393,20 @@
                 "Kiwi",
                 "Laranja",
                 "Mexerica",
-                "Limão"]
+                "Limão"],
+            salads: [
+                "Alface",
+                "Tomate",
+                "Cenoura",
+                "Pepino",
+                "Beterraba",
+                "Repolho",
+                "Brócolis",
+                "Couve-flor",
+                "Rúcula",
+                "Almeirão",
+                "Acelga"
+            ]
         };
 
         function seedCatalogIfNeeded() {
@@ -1438,7 +1526,8 @@
             proteinSelectContainer: [],
             carbSelectContainer: [],
             freeSelectContainer: [],
-            fruitSelectContainer: []
+            fruitSelectContainer: [],
+            saladSelectContainer: []
         };
 
         function getSelectedValues(containerId) {
@@ -1576,6 +1665,7 @@
             await renderMultiSelectDropdown("carbs", "carbSelectContainer");
             await renderMultiSelectDropdown("freeMeals", "freeSelectContainer");
             await renderMultiSelectDropdown("fruits", "fruitSelectContainer");
+            await renderMultiSelectDropdown("salads", "saladSelectContainer");
 
             await renderCatalogModal();
         }
@@ -1745,18 +1835,24 @@
         document.getElementById("mealForm").addEventListener("submit", e => {
             e.preventDefault();
 
+            const dateInput = document.getElementById("date");
+            const mealTypeSelect = document.getElementById("mealType");
+            const beverageSelect = document.getElementById("beverage");
+            const classificationSelect = document.getElementById("classification");
+            const notesInput = document.getElementById("notes");
+
             const meal = {
-                date: date.value,
-                type: mealType.value,
+                date: dateInput.value,
+                type: mealTypeSelect.value,
                 base: getSelectedValues("baseSelectContainer"),
                 protein: getSelectedValues("proteinSelectContainer"),
                 carb: getSelectedValues("carbSelectContainer"),
                 fruit: getSelectedValues("fruitSelectContainer"),
-                hasSide: hasSide.value || null,
-                beverage: beverage.value || null,
+                salads: getSelectedValues("saladSelectContainer"),
+                beverage: beverageSelect.value || null,
                 freeMeal: getSelectedValues("freeSelectContainer"),
-                classification: classification.value,
-                notes: notes.value
+                classification: classificationSelect.value,
+                notes: notesInput.value
             };
 
             const tx = db.transaction("meals", "readwrite");
@@ -1794,9 +1890,8 @@
                     cursor.continue();
                 } else {
                     allMeals = meals;
-
-                    render();
-                    dashboard(meals);
+                    loadAvailableMonths();
+                    refreshDashboard();
                 }
             };
         }
@@ -1823,9 +1918,9 @@
                 setSelectedValues("carbSelectContainer", meal.carb || []);
                 setSelectedValues("freeSelectContainer", meal.freeMeal || []);
                 setSelectedValues("fruitSelectContainer", meal.fruit || []);
+                setSelectedValues("saladSelectContainer", meal.salads || []);
             }, 100);
 
-            document.getElementById("hasSide").value = meal.hasSide || "";
             document.getElementById("beverage").value = meal.beverage || "";
             document.getElementById("classification").value = meal.classification || "muitoBoa";
             document.getElementById("notes").value = meal.notes || "";
@@ -1846,6 +1941,7 @@
             setSelectedValues("carbSelectContainer", []);
             setSelectedValues("freeSelectContainer", []);
             setSelectedValues("fruitSelectContainer", []);
+            setSelectedValues("saladSelectContainer", []);
             const submitButton = document.getElementById("saveMealButton");
             if (submitButton) {
                 submitButton.textContent = "💾 Salvar refeição";
@@ -1920,14 +2016,14 @@
         function getVisibleMeals() {
             const today = getBrazilDateString();
             const { start: weekStart, end: weekEnd } = getWeekRange(today);
-            const [currentYear, currentMonth] = today.split("-").map(Number);
+            const periodMeals = filterMealsByMonth(selectedMonth);
 
-            return [...allMeals]
+            return [...periodMeals]
                 .filter(m => {
                     if (activeMealClassification && m.classification !== activeMealClassification) return false;
 
                     if (mealSearchTerm) {
-                        const haystack = `${m.notes || ""} ${formatMealType(m.type)} ${formatValues(m.base)} ${formatValues(m.protein)} ${formatValues(m.carb)} ${formatValues(m.fruit)} ${formatValues(m.freeMeal)}`.toLowerCase();
+                        const haystack = `${m.notes || ""} ${formatMealType(m.type)} ${formatValues(m.base)} ${formatValues(m.protein)} ${formatValues(m.carb)} ${formatValues(m.fruit)} ${formatValues(m.salads)} ${formatValues(m.freeMeal)}`.toLowerCase();
                         if (!haystack.includes(mealSearchTerm)) return false;
                     }
 
@@ -1943,7 +2039,7 @@
                         case 'week':
                             return m.date >= weekStart && m.date <= weekEnd;
                         case 'month':
-                            return Number(m.date.slice(0, 4)) === currentYear && Number(m.date.slice(5, 7)) === currentMonth;
+                            return selectedMonth === "all" ? true : m.date.startsWith(selectedMonth);
                         default:
                             return true;
                     }
@@ -2064,9 +2160,10 @@
                 parts.push(`Refeições Livres: ${freeMeals.join(" • ")}`);
             }
 
-            // Salada/Legumes (apenas se sim)
-            if (meal.hasSide === "sim") {
-                parts.push("Salada: Sim");
+            // Saladas e legumes
+            const salads = normalizeValues(meal.salads);
+            if (salads.length > 0) {
+                parts.push(`Saladas e Legumes: ${salads.join(" • ")}`);
             }
 
             // Bebida
@@ -2108,8 +2205,8 @@
             parts.push(...normalizeValues(meal.protein));
             parts.push(...normalizeValues(meal.carb));
             parts.push(...normalizeValues(meal.fruit));
+            parts.push(...normalizeValues(meal.salads));
             parts.push(...normalizeValues(meal.freeMeal));
-            if (meal.hasSide === "sim") parts.push("Salada / legumes");
             if (meal.beverage) parts.push(formatBeverage(meal.beverage));
             if (meal.notes) parts.push(meal.notes);
 
@@ -2201,7 +2298,7 @@
             const pageMeals = meals.slice(start, end);
 
             if (!pageMeals.length) {
-                list.innerHTML = '<div class="empty-state">Nenhuma refeição encontrada para este filtro.</div>';
+                list.innerHTML = `<div class="empty-state">${selectedMonth === "all" ? "Nenhuma refeição encontrada para este filtro." : "Nenhuma refeição encontrada para este período."}</div>`;
                 renderPagination(meals.length);
                 return;
             }
@@ -2227,7 +2324,7 @@
 
                     ${formatValues(m.fruit) ? `<p><strong>🍌 Fruta:</strong> ${formatValues(m.fruit)}</p>` : ""}
 
-                    ${m.hasSide ? `<p><strong>🥗 Salada/Legumes:</strong> ${m.hasSide === "sim" ? "Sim" : "Não"}</p>` : ""}
+                    ${formatValues(m.salads) ? `<p><strong>🥗 Saladas e Legumes:</strong> ${formatValues(m.salads)}</p>` : ""}
 
                     ${m.beverage ? `<p><strong>🥤 Bebida:</strong> ${formatBeverage(m.beverage)}</p>` : ""}
 
@@ -2272,21 +2369,16 @@
             let count = 0;
 
             const today = getBrazilDateString();
-            const [currentYear, currentMonth] = today.split("-").map(Number);
 
             let todayTotal = 0;
             let todayCount = 0;
 
             meals.forEach(m => {
-                const [mealYear, mealMonth] = (m.date || "").split("-").map(Number);
+                counts[m.classification]++;
+                total += scoreMap[m.classification] || 0;
+                count++;
 
-                if (mealYear === currentYear && mealMonth === currentMonth) {
-                    counts[m.classification]++;
-                    total += scoreMap[m.classification] || 0;
-                    count++;
-                }
-
-                if (m.date === today) {
+                if (m.date === today && (selectedMonth === "all" || selectedMonth === getCurrentMonth())) {
                     todayTotal += scoreMap[m.classification] || 0;
                     todayCount++;
                 }
@@ -2317,7 +2409,7 @@
 
         async function exportDatabase() {
 
-            const stores = ["bases", "proteins", "carbs", "freeMeals", "fruits", "meals"];
+            const stores = ["bases", "proteins", "carbs", "freeMeals", "fruits", "salads", "meals"];
 
             const backup = {
                 version: 1,
@@ -2389,6 +2481,7 @@
             await restoreStore("carbs", backup.carbs || []);
             await restoreStore("freeMeals", backup.freeMeals || []);
             await restoreStore("fruits", backup.fruits || []);
+            await restoreStore("salads", backup.salads || []);
             await restoreStore("meals", backup.meals || []);
 
             alert("Backup restaurado com sucesso!");
@@ -2421,6 +2514,7 @@
             await clearStore("carbs");
             await clearStore("freeMeals");
             await clearStore("fruits");
+            await clearStore("salads");
             await clearStore("meals");
 
         }
