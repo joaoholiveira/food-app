@@ -7,6 +7,14 @@
     <title>🍽️ Gerenciador Alimentação</title>
 
     <link rel="stylesheet" href="styles.css">
+    <link href="https://cdn.jsdelivr.net/npm/@n8n/chat/dist/style.css" rel="stylesheet" />
+    <script type="module">
+    	import { createChat } from 'https://cdn.jsdelivr.net/npm/@n8n/chat/dist/chat.bundle.es.js';
+    
+    	createChat({
+    		webhookUrl: 'https://n8n.srv2047923.hstgr.cloud/webhook/ba03bd16-d403-4130-9149-d7164fc2ab90/chat'
+    	});
+    </script>
 </head>
 
 <body>
@@ -407,7 +415,7 @@
     </div>
 
     <footer class="app-footer" aria-label="Rodapé do aplicativo">
-        <span>V4.0.1</span>
+        <span>V5.0.0</span>
     </footer>
 
     <script src="script.js" defer></script>
