@@ -2,11 +2,40 @@
 
         const ITEMS_PER_PAGE = 5;
         const CATALOG_ITEMS_PER_PAGE = 6;
+        const CATALOG_STORES = ["bases", "proteins", "carbs", "freeMeals", "fruits", "salads"];
+        const CATALOG_CATEGORY_LABELS = {
+            bases: "Bases",
+            proteins: "Proteínas",
+            carbs: "Carboidratos",
+            freeMeals: "Refeições livres",
+            fruits: "Frutas",
+            salads: "Saladas e legumes"
+        };
 
         let activeCatalogStore = "bases";
         let activeCatalogPage = 1;
+        let catalogRenderRequest = 0;
+        let catalogConsultRenderRequest = 0;
+        let catalogConsultHasSearched = false;
+        let pendingCatalogDeletion = null;
+        let catalogConsultReturnFocus = null;
         let classificationHelpReturnFocus = null;
         let classificationHelpIndex = 0;
+
+        document.getElementById("catalogSearchInput").addEventListener("input", () => {
+            activeCatalogPage = 1;
+            renderCatalogModal();
+        });
+
+        document.getElementById("catalogConsultSearch").addEventListener("input", event => {
+            if (event.target.value.trim()) catalogConsultHasSearched = true;
+            renderCatalogConsultation();
+        });
+        document.getElementById("catalogEditForm").addEventListener("submit", saveConsultCatalogItem);
+        document.getElementById("catalogEditCancelButton").addEventListener("click", closeCatalogEditor);
+        document.getElementById("catalogEditCancelIcon").addEventListener("click", closeCatalogEditor);
+        document.getElementById("catalogDeleteCancel").addEventListener("click", cancelCatalogDeletion);
+        document.getElementById("catalogDeleteConfirm").addEventListener("click", confirmCatalogDeletion);
 
         function updateClassificationHelpCarousel() {
             const carousel = document.getElementById("classificationHelpCarousel");
@@ -114,6 +143,7 @@
             activeCatalogStore = store;
             activeCatalogPage = 1;
             resetCatalogEditor();
+            document.getElementById("catalogSearchInput").value = "";
 
             document.querySelectorAll(".tab-btn").forEach(btn => {
                 btn.classList.toggle("active", btn.getAttribute("data-store") === store);
@@ -123,8 +153,62 @@
             renderCatalogModal();
         }
 
+        function openCatalogConsultation(query = "") {
+            const modal = document.getElementById("catalogConsultModal");
+            const search = document.getElementById("catalogConsultSearch");
+            catalogConsultReturnFocus = document.activeElement;
+            catalogConsultHasSearched = Boolean(String(query).trim());
+            search.value = query;
+            document.getElementById("catalogConsultFeedback").textContent = "";
+            closeCatalogEditor();
+            cancelCatalogDeletion();
+            modal.classList.add("open");
+            renderCatalogConsultation();
+            search.focus();
+        }
+
+        function closeCatalogConsultation() {
+            const modal = document.getElementById("catalogConsultModal");
+            if (!modal || !modal.classList.contains("open")) return;
+
+            modal.classList.remove("open");
+            closeCatalogEditor();
+            cancelCatalogDeletion();
+            if (catalogConsultReturnFocus && catalogConsultReturnFocus.isConnected) {
+                catalogConsultReturnFocus.focus();
+            }
+            catalogConsultReturnFocus = null;
+        }
+
+        function openCatalogEditor(item) {
+            const form = document.getElementById("catalogEditForm");
+            document.getElementById("catalogEditId").value = item.id;
+            document.getElementById("catalogEditStore").value = item.storeName;
+            document.getElementById("catalogEditName").value = item.name || "";
+            document.getElementById("catalogEditDescription").value = item.description || "";
+            document.getElementById("catalogEditCategory").value = item.storeName;
+            document.getElementById("catalogEditError").textContent = "";
+            form.hidden = false;
+            document.getElementById("catalogDeleteConfirmation").hidden = true;
+            document.getElementById("catalogEditName").focus();
+        }
+
+        function closeCatalogEditor() {
+            const form = document.getElementById("catalogEditForm");
+            if (form) form.hidden = true;
+            const error = document.getElementById("catalogEditError");
+            if (error) error.textContent = "";
+        }
+
+        function cancelCatalogDeletion() {
+            const confirmation = document.getElementById("catalogDeleteConfirmation");
+            if (confirmation) confirmation.hidden = true;
+            pendingCatalogDeletion = null;
+        }
+
         function closeCatalogModal() {
             resetCatalogEditor();
+            document.getElementById("catalogSearchInput").value = "";
             document.getElementById("catalogModal").classList.remove("open");
         }
 
@@ -140,6 +224,11 @@
 
         document.addEventListener("keydown", e => {
             if (e.key === "Escape") {
+                if (pendingCatalogDeletion) {
+                    cancelCatalogDeletion();
+                    return;
+                }
+                closeCatalogConsultation();
                 closeBackupModal();
                 closeCatalogModal();
                 closeClassificationHelp();
@@ -154,6 +243,22 @@
             const helpModal = document.getElementById("classificationHelpModal");
             if (e.key === "Tab" && helpModal && helpModal.classList.contains("open")) {
                 const focusableElements = [...helpModal.querySelectorAll("button:not([disabled]), a[href], input:not([disabled]), select:not([disabled]), textarea:not([disabled]), [tabindex]:not([tabindex='-1'])")];
+                const firstElement = focusableElements[0];
+                const lastElement = focusableElements[focusableElements.length - 1];
+
+                if (e.shiftKey && document.activeElement === firstElement) {
+                    e.preventDefault();
+                    lastElement.focus();
+                } else if (!e.shiftKey && document.activeElement === lastElement) {
+                    e.preventDefault();
+                    firstElement.focus();
+                }
+            }
+
+            const catalogModal = document.getElementById("catalogConsultModal");
+            if (e.key === "Tab" && catalogModal && catalogModal.classList.contains("open")) {
+                const focusableElements = [...catalogModal.querySelectorAll("button:not([disabled]), input:not([disabled]), select:not([disabled]), textarea:not([disabled]), [tabindex]:not([tabindex='-1'])")]
+                    .filter(element => !element.closest("[hidden]"));
                 const firstElement = focusableElements[0];
                 const lastElement = focusableElements[focusableElements.length - 1];
 
@@ -182,19 +287,6 @@
 
         let allMeals = [];
         let editingMealId = null;
-
-        function toggleDashboard() {
-            const panel = document.getElementById("dashboardPanel");
-            const button = document.querySelector(".dashboard-toggle");
-            const icon = document.querySelector(".toggle-icon");
-
-            if (!panel || !button || !icon) return;
-
-            const isOpen = panel.classList.toggle("open");
-            button.setAttribute("aria-expanded", isOpen ? "true" : "false");
-            button.querySelector("span:first-child").textContent = isOpen ? "Recolher" : "Expandir";
-            icon.style.transform = isOpen ? "rotate(180deg)" : "rotate(0deg)";
-        }
 
         function toggleDashboard() {
             const panel = document.getElementById("dashboardPanel");
@@ -493,18 +585,16 @@
             }
 
             if (editingCatalogItem && editingCatalogItem.store === store) {
-                const tx = db.transaction(store, "readwrite");
-                const store_obj = tx.objectStore(store);
-                store_obj.put({ id: editingCatalogItem.id, name: trimmedValue });
-
-                tx.oncomplete = () => {
-                    resetCatalogEditor();
-                    refreshCatalogAndMealSelectors();
-                };
-
-                tx.onerror = () => {
-                    alert("Erro ao atualizar item.");
-                };
+                getCatalogItem(store, editingCatalogItem.id).then(existingItem => {
+                    if (!existingItem) throw new Error("Item não encontrado.");
+                    const tx = db.transaction(store, "readwrite");
+                    tx.objectStore(store).put({ ...existingItem, name: trimmedValue, id: editingCatalogItem.id });
+                    tx.oncomplete = () => {
+                        resetCatalogEditor();
+                        refreshCatalogAndMealSelectors();
+                    };
+                    tx.onerror = () => alert("Erro ao atualizar item.");
+                }).catch(() => alert("Erro ao carregar o item para atualização."));
                 return;
             }
 
@@ -540,6 +630,32 @@
             const normalized = Array.isArray(values) ? values : values ? [values] : [];
             multiSelectState[containerId] = normalized;
             updateMultiSelectButton(containerId);
+            updateMealSubmitButton();
+        }
+
+        function hasSelectedMealFood() {
+            return [
+                "baseSelectContainer",
+                "proteinSelectContainer",
+                "carbSelectContainer",
+                "freeSelectContainer",
+                "fruitSelectContainer",
+                "saladSelectContainer"
+            ].some(containerId => getSelectedValues(containerId).length > 0);
+        }
+
+        function updateMealSubmitButton() {
+            const button = document.getElementById("saveMealButton");
+            const hint = document.getElementById("mealSelectionHint");
+            if (!button) return;
+
+            const hasFood = hasSelectedMealFood();
+            button.disabled = !hasFood;
+            if (hint) {
+                hint.textContent = hasFood
+                    ? "Pelo menos um alimento selecionado; a refeição pode ser salva."
+                    : "Selecione ao menos um alimento para habilitar o cadastro.";
+            }
         }
 
         function toggleMultiSelectDropdown(containerId) {
@@ -550,12 +666,15 @@
             document.querySelectorAll(".multi-select-dropdown.open").forEach(dd => {
                 if (dd !== dropdown) {
                     dd.classList.remove("open");
-                    dd.closest(".multi-select-container").querySelector(".multi-select-button").classList.remove("open");
+                    const otherButton = dd.closest(".multi-select-container").querySelector(".multi-select-button");
+                    otherButton.classList.remove("open");
+                    otherButton.setAttribute("aria-expanded", "false");
                 }
             });
 
             button.classList.toggle("open");
             dropdown.classList.toggle("open");
+            button.setAttribute("aria-expanded", button.classList.contains("open") ? "true" : "false");
         }
 
         function closeMultiSelectDropdown(containerId) {
@@ -564,6 +683,7 @@
             const dropdown = container.querySelector(".multi-select-dropdown");
             button.classList.remove("open");
             dropdown.classList.remove("open");
+            button.setAttribute("aria-expanded", "false");
         }
 
         function toggleMultiSelectOption(containerId, value) {
@@ -578,6 +698,7 @@
 
             multiSelectState[containerId] = selected;
             updateMultiSelectButton(containerId);
+            updateMealSubmitButton();
         }
 
         function updateMultiSelectButton(containerId) {
@@ -610,6 +731,7 @@
 
             if (filteredSelection.length !== currentSelection.length) {
                 multiSelectState[containerId] = filteredSelection;
+                updateMealSubmitButton();
             }
         }
 
@@ -625,20 +747,51 @@
 
                 syncMultiSelectStateWithCatalog(containerId, items);
 
-                container.innerHTML = `
-                    <button type="button" class="multi-select-button" onclick="toggleMultiSelectDropdown('${containerId}')">
-                        <span class="multi-select-button-text">— Nenhum —</span>
-                        <span class="multi-select-arrow">▼</span>
-                    </button>
-                    <div class="multi-select-dropdown">
-                        ${items.map(item => `
-                            <div class="multi-select-option">
-                                <input type="checkbox" id="${containerId}_${item.id}" value="${item.name}" onchange="toggleMultiSelectOption('${containerId}', '${item.name}')">
-                                <label for="${containerId}_${item.id}">${item.name}</label>
-                            </div>
-                        `).join("")}
-                    </div>
-                `;
+                const buttonLabels = {
+                    bases: "Selecionar bases",
+                    proteins: "Selecionar proteínas",
+                    carbs: "Selecionar carboidratos",
+                    freeMeals: "Selecionar refeições livres",
+                    fruits: "Selecionar frutas",
+                    salads: "Selecionar saladas e legumes"
+                };
+                const button = document.createElement("button");
+                button.type = "button";
+                button.className = "multi-select-button";
+                button.setAttribute("aria-label", buttonLabels[storeName] || "Selecionar itens");
+                button.setAttribute("aria-expanded", "false");
+                button.setAttribute("aria-controls", `${containerId}-options`);
+
+                const buttonText = document.createElement("span");
+                buttonText.className = "multi-select-button-text";
+                buttonText.textContent = "— Nenhum —";
+                const arrow = document.createElement("span");
+                arrow.className = "multi-select-arrow";
+                arrow.setAttribute("aria-hidden", "true");
+                arrow.textContent = "▼";
+                button.append(buttonText, arrow);
+                button.addEventListener("click", () => toggleMultiSelectDropdown(containerId));
+
+                const dropdown = document.createElement("div");
+                dropdown.className = "multi-select-dropdown";
+                dropdown.id = `${containerId}-options`;
+
+                items.forEach(item => {
+                    const option = document.createElement("div");
+                    option.className = "multi-select-option";
+                    const checkbox = document.createElement("input");
+                    checkbox.type = "checkbox";
+                    checkbox.id = `${containerId}_${item.id}`;
+                    checkbox.value = item.name;
+                    checkbox.addEventListener("change", () => toggleMultiSelectOption(containerId, item.name));
+                    const label = document.createElement("label");
+                    label.htmlFor = checkbox.id;
+                    label.textContent = item.name;
+                    option.append(checkbox, label);
+                    dropdown.appendChild(option);
+                });
+
+                container.replaceChildren(button, dropdown);
 
                 updateMultiSelectButton(containerId);
                 resolve();
@@ -674,12 +827,18 @@
 
         // ================= DELETE CATALOG =================
         function deleteCatalogItem(store, id) {
-            const tx = db.transaction(store, "readwrite");
-            tx.objectStore(store).delete(id);
-            tx.oncomplete = () => {
-                resetCatalogEditor();
-                refreshCatalogAndMealSelectors();
-            };
+            getCatalogItem(store, id).then(item => {
+                if (!item) {
+                    document.getElementById("catalogSearchStatus").textContent = "Este alimento não está mais no catálogo.";
+                    return;
+                }
+                closeCatalogModal();
+                openCatalogConsultation(item.name || "");
+                requestCatalogDeletion({ ...item, storeName: store });
+            }).catch(error => {
+                document.getElementById("catalogSearchStatus").textContent = "Não foi possível carregar o alimento para exclusão.";
+                console.error("Erro ao localizar item para exclusão:", error);
+            });
         }
 
         function getCatalogItems(storeName) {
@@ -693,16 +852,383 @@
             });
         }
 
+        function normalizeCatalogSearch(value) {
+            return String(value || "")
+                .trim()
+                .normalize("NFD")
+                .replace(/[\u0300-\u036f]/g, "")
+                .toLocaleLowerCase("pt-BR");
+        }
+
+        async function searchCatalogAcrossCategories(query) {
+            const itemsByCategory = await Promise.all(CATALOG_STORES.map(async storeName => {
+                const items = await getCatalogItems(storeName);
+                return items.map(item => ({ ...item, storeName }));
+            }));
+            const normalizedQuery = normalizeCatalogSearch(query);
+
+            return itemsByCategory
+                .flat()
+                .filter(item => normalizeCatalogSearch(item.name).includes(normalizedQuery));
+        }
+
+        function getCatalogItem(storeName, id) {
+            return new Promise((resolve, reject) => {
+                const tx = db.transaction(storeName, "readonly");
+                const request = tx.objectStore(storeName).get(Number(id));
+                request.onsuccess = () => resolve(request.result);
+                request.onerror = () => reject(request.error);
+                tx.onerror = () => reject(tx.error);
+            });
+        }
+
+        function persistCatalogItemUpdate(sourceStore, id, targetStore, updatedItem) {
+            return new Promise((resolve, reject) => {
+                const stores = sourceStore === targetStore ? [sourceStore] : [sourceStore, targetStore];
+                const tx = db.transaction(stores, "readwrite");
+
+                if (sourceStore === targetStore) {
+                    tx.objectStore(sourceStore).put({ ...updatedItem, id: Number(id) });
+                } else {
+                    const { id: previousId, ...itemWithoutOldId } = updatedItem;
+                    tx.objectStore(targetStore).add(itemWithoutOldId);
+                    tx.objectStore(sourceStore).delete(Number(id));
+                }
+
+                tx.oncomplete = () => resolve();
+                tx.onerror = () => reject(tx.error);
+                tx.onabort = () => reject(tx.error || new Error("A atualização do catálogo foi cancelada."));
+            });
+        }
+
+        async function saveConsultCatalogItem(event) {
+            event.preventDefault();
+
+            const name = document.getElementById("catalogEditName").value.trim();
+            const description = document.getElementById("catalogEditDescription").value.trim();
+            const sourceStore = document.getElementById("catalogEditStore").value;
+            const targetStore = document.getElementById("catalogEditCategory").value;
+            const id = Number(document.getElementById("catalogEditId").value);
+            const errorMessage = document.getElementById("catalogEditError");
+
+            if (!name) {
+                errorMessage.textContent = "Informe o nome do alimento.";
+                document.getElementById("catalogEditName").focus();
+                return;
+            }
+            if (!CATALOG_STORES.includes(sourceStore) || !CATALOG_STORES.includes(targetStore) || !Number.isFinite(id)) {
+                errorMessage.textContent = "Não foi possível identificar o alimento. Feche e abra a edição novamente.";
+                return;
+            }
+
+            try {
+                const existingItem = await getCatalogItem(sourceStore, id);
+                if (!existingItem) {
+                    errorMessage.textContent = "Este alimento não está mais disponível no catálogo. Atualize a consulta.";
+                    return;
+                }
+
+                const historicalReferences = Array.isArray(existingItem.historicalReferences)
+                    ? [...existingItem.historicalReferences]
+                    : [];
+                const currentReference = { name: existingItem.name || "", storeName: sourceStore };
+                if (currentReference.name && (name !== existingItem.name || sourceStore !== targetStore)
+                    && !historicalReferences.some(reference => reference.name === currentReference.name && reference.storeName === currentReference.storeName)) {
+                    historicalReferences.push(currentReference);
+                }
+
+                const updatedItem = {
+                    ...existingItem,
+                    name,
+                    description,
+                    historicalReferences
+                };
+
+                await persistCatalogItemUpdate(sourceStore, id, targetStore, updatedItem);
+                closeCatalogEditor();
+                catalogConsultHasSearched = true;
+                document.getElementById("catalogConsultSearch").value = name;
+
+                try {
+                    await loadCatalog();
+                    document.getElementById("catalogConsultFeedback").textContent = "Alimento atualizado. As refeições anteriores foram preservadas.";
+                } catch (refreshError) {
+                    document.getElementById("catalogConsultFeedback").textContent = "Alimento salvo, mas não foi possível atualizar os seletores agora. Recarregue a página.";
+                    console.error("Erro ao atualizar seletores do catálogo:", refreshError);
+                }
+                await renderCatalogConsultation();
+            } catch (error) {
+                errorMessage.textContent = "Não foi possível salvar as alterações. Tente novamente.";
+                console.error("Erro ao salvar alimento:", error);
+            }
+        }
+
+        function getMealFieldsForCatalogStore(storeName) {
+            return {
+                bases: "base",
+                proteins: "protein",
+                carbs: "carb",
+                freeMeals: "freeMeal",
+                fruits: "fruit",
+                salads: "salads"
+            }[storeName];
+        }
+
+        async function findCatalogItemMealUsage(item) {
+            const meals = await getAll("meals");
+            const references = [
+                { name: item.name || "", storeName: item.storeName },
+                ...(Array.isArray(item.historicalReferences) ? item.historicalReferences : [])
+            ].filter(reference => reference.name && CATALOG_STORES.includes(reference.storeName));
+            const usedMealIds = new Set();
+
+            meals.forEach(meal => {
+                const isMatch = references.some(reference => {
+                    const field = getMealFieldsForCatalogStore(reference.storeName);
+                    return normalizeValues(meal[field]).includes(reference.name);
+                });
+                if (isMatch) usedMealIds.add(meal.id);
+            });
+
+            return usedMealIds.size;
+        }
+
+        async function requestCatalogDeletion(item) {
+            const confirmation = document.getElementById("catalogDeleteConfirmation");
+            const title = document.getElementById("catalogDeleteTitle");
+            const message = document.getElementById("catalogDeleteMessage");
+            document.getElementById("catalogEditForm").hidden = true;
+            document.getElementById("catalogEditError").textContent = "";
+            title.textContent = `Excluir “${item.name}” do catálogo?`;
+            message.textContent = "Verificando se este alimento aparece em refeições anteriores…";
+            confirmation.hidden = false;
+            pendingCatalogDeletion = { storeName: item.storeName, id: item.id, name: item.name };
+
+            try {
+                const mealCount = await findCatalogItemMealUsage(item);
+                if (!pendingCatalogDeletion || pendingCatalogDeletion.id !== item.id || pendingCatalogDeletion.storeName !== item.storeName) return;
+                message.textContent = mealCount
+                    ? `Este alimento aparece em ${mealCount} refeição(ões) antiga(s). A exclusão remove apenas sua disponibilidade para novos registros; o histórico será preservado.`
+                    : "A exclusão remove apenas este alimento do catálogo e das novas seleções. Nenhuma refeição ou dado do histórico será excluído.";
+            } catch (error) {
+                message.textContent = "Não foi possível verificar o histórico. Você ainda pode excluir somente do catálogo; as refeições não serão alteradas.";
+                console.error("Erro ao verificar uso do alimento:", error);
+            }
+
+            document.getElementById("catalogDeleteCancel").focus();
+        }
+
+        async function confirmCatalogDeletion() {
+            if (!pendingCatalogDeletion) return;
+            const { storeName, id, name } = pendingCatalogDeletion;
+            const button = document.getElementById("catalogDeleteConfirm");
+            button.disabled = true;
+
+            try {
+                await new Promise((resolve, reject) => {
+                    const tx = db.transaction(storeName, "readwrite");
+                    tx.objectStore(storeName).delete(Number(id));
+                    tx.oncomplete = resolve;
+                    tx.onerror = () => reject(tx.error);
+                    tx.onabort = () => reject(tx.error || new Error("A exclusão foi cancelada."));
+                });
+            } catch (error) {
+                document.getElementById("catalogConsultFeedback").textContent = "Não foi possível excluir o alimento. Tente novamente.";
+                console.error("Erro ao excluir alimento do catálogo:", error);
+                button.disabled = false;
+                return;
+            } finally {
+                button.disabled = false;
+            }
+
+            cancelCatalogDeletion();
+            closeCatalogEditor();
+            document.getElementById("catalogConsultFeedback").textContent = `“${name}” foi removido do catálogo. As refeições antigas foram preservadas.`;
+            try {
+                await loadCatalog();
+            } catch (error) {
+                document.getElementById("catalogConsultFeedback").textContent = `“${name}” foi removido. Recarregue a página para atualizar as seleções.`;
+                console.error("Erro ao atualizar seletores após exclusão:", error);
+            }
+            await renderCatalogConsultation();
+        }
+
+        function renderCatalogConsultItem(list, item) {
+            const card = document.createElement("article");
+            card.className = "catalog-item catalog-consult-item";
+
+            const content = document.createElement("div");
+            content.className = "catalog-consult-item-content";
+            const heading = document.createElement("div");
+            heading.className = "catalog-consult-item-heading";
+            const name = document.createElement("h3");
+            name.textContent = item.name || "(Sem nome)";
+            const category = document.createElement("span");
+            category.className = "catalog-category-badge";
+            category.textContent = CATALOG_CATEGORY_LABELS[item.storeName] || item.storeName;
+            heading.append(name, category);
+            content.appendChild(heading);
+
+            if (item.description) {
+                const description = document.createElement("p");
+                description.className = "catalog-consult-description";
+                description.textContent = item.description;
+                content.appendChild(description);
+            }
+
+            const actions = document.createElement("div");
+            actions.className = "catalog-item-actions catalog-consult-actions";
+            const editButton = document.createElement("button");
+            editButton.type = "button";
+            editButton.className = "history-action-btn secondary";
+            editButton.textContent = "Editar";
+            editButton.setAttribute("aria-label", `Editar ${item.name}`);
+            editButton.addEventListener("click", () => openCatalogEditor(item));
+
+            const deleteButton = document.createElement("button");
+            deleteButton.type = "button";
+            deleteButton.className = "history-action-btn danger-action";
+            deleteButton.textContent = "Excluir";
+            deleteButton.setAttribute("aria-label", `Excluir ${item.name}`);
+            deleteButton.addEventListener("click", () => requestCatalogDeletion(item));
+            actions.append(editButton, deleteButton);
+
+            card.append(content, actions);
+            list.appendChild(card);
+        }
+
+        async function renderCatalogConsultation() {
+            const list = document.getElementById("catalogConsultResults");
+            const query = document.getElementById("catalogConsultSearch").value.trim();
+            const renderRequest = ++catalogConsultRenderRequest;
+            list.replaceChildren();
+
+            if (!query && !catalogConsultHasSearched) {
+                const empty = document.createElement("div");
+                empty.className = "empty-state";
+                empty.textContent = "Digite o nome ou parte do nome de um alimento para consultar o catálogo.";
+                list.appendChild(empty);
+                document.getElementById("catalogConsultStatus").textContent = "";
+                return;
+            }
+
+            document.getElementById("catalogConsultStatus").textContent = query
+                ? "Pesquisando em todas as categorias…"
+                : "Carregando o catálogo completo…";
+
+            try {
+                const matches = query
+                    ? await searchCatalogAcrossCategories(query)
+                    : (await Promise.all(CATALOG_STORES.map(async storeName =>
+                        (await getCatalogItems(storeName)).map(item => ({ ...item, storeName }))
+                    ))).flat();
+                if (renderRequest !== catalogConsultRenderRequest) return;
+
+                if (!matches.length) {
+                    document.getElementById("catalogConsultStatus").textContent = query
+                        ? "Nenhum alimento encontrado para esta busca."
+                        : "O catálogo está vazio.";
+                    const empty = document.createElement("div");
+                    empty.className = "empty-state";
+                    empty.textContent = query
+                        ? "Nenhum alimento encontrado para esta busca."
+                        : "Ainda não há alimentos cadastrados no catálogo.";
+                    list.appendChild(empty);
+                    return;
+                }
+
+                document.getElementById("catalogConsultStatus").textContent = query
+                    ? `${matches.length} ${matches.length === 1 ? "alimento encontrado" : "alimentos encontrados"}.`
+                    : `${matches.length} alimentos no catálogo.`;
+                matches.forEach(item => renderCatalogConsultItem(list, item));
+            } catch (error) {
+                if (renderRequest !== catalogConsultRenderRequest) return;
+                document.getElementById("catalogConsultStatus").textContent = "Não foi possível consultar o catálogo. Tente novamente.";
+                const failure = document.createElement("div");
+                failure.className = "empty-state";
+                failure.textContent = "O catálogo não pôde ser carregado. Seus dados não foram alterados.";
+                list.appendChild(failure);
+                console.error("Erro ao consultar o catálogo:", error);
+            }
+        }
+
+        function renderCatalogSearchResults(list, matches) {
+            matches.forEach(item => {
+                const row = document.createElement("div");
+                row.className = "catalog-item catalog-search-result";
+                row.setAttribute("role", "listitem");
+
+                const name = document.createElement("span");
+                name.className = "catalog-search-result-name";
+                name.textContent = item.name || "";
+
+                const category = document.createElement("span");
+                category.className = "catalog-category-badge";
+                category.textContent = CATALOG_CATEGORY_LABELS[item.storeName] || item.storeName;
+
+                row.append(name, category);
+                list.appendChild(row);
+            });
+        }
+
         async function renderCatalogModal() {
             const list = document.getElementById("catalogList");
             const pagination = document.getElementById("catalogPagination");
+            const searchInput = document.getElementById("catalogSearchInput");
+            const searchStatus = document.getElementById("catalogSearchStatus");
 
             if (!list || !pagination) return;
 
             list.innerHTML = "";
             pagination.innerHTML = "";
 
-            const items = await getCatalogItems(activeCatalogStore);
+            const renderRequest = ++catalogRenderRequest;
+            const query = searchInput ? searchInput.value.trim() : "";
+
+            if (query) {
+                if (searchStatus) searchStatus.textContent = "Buscando em todas as categorias…";
+                list.setAttribute("role", "list");
+
+                try {
+                    const matches = await searchCatalogAcrossCategories(query);
+                    if (renderRequest !== catalogRenderRequest) return;
+
+                    if (!matches.length) {
+                        if (searchStatus) searchStatus.textContent = "Nenhum alimento encontrado para esta busca.";
+                        list.innerHTML = '<div class="empty-state">Nenhum alimento encontrado para esta busca.</div>';
+                        list.removeAttribute("role");
+                        return;
+                    }
+
+                    if (searchStatus) {
+                        searchStatus.textContent = `${matches.length} ${matches.length === 1 ? "alimento encontrado" : "alimentos encontrados"} em todas as categorias.`;
+                    }
+                    renderCatalogSearchResults(list, matches);
+                } catch (error) {
+                    if (renderRequest !== catalogRenderRequest) return;
+                    if (searchStatus) searchStatus.textContent = "Não foi possível consultar o catálogo. Tente novamente.";
+                    list.innerHTML = '<div class="empty-state">O catálogo não pôde ser carregado. Tente novamente.</div>';
+                    list.removeAttribute("role");
+                    console.error("Erro ao pesquisar o catálogo:", error);
+                }
+
+                return;
+            }
+
+            if (searchStatus) searchStatus.textContent = "";
+            list.removeAttribute("role");
+
+            let items;
+            try {
+                items = await getCatalogItems(activeCatalogStore);
+            } catch (error) {
+                if (renderRequest !== catalogRenderRequest) return;
+                list.innerHTML = '<div class="empty-state">Não foi possível carregar esta categoria do catálogo.</div>';
+                console.error("Erro ao carregar categoria do catálogo:", error);
+                return;
+            }
+
+            if (renderRequest !== catalogRenderRequest) return;
 
             if (!items.length) {
                 list.innerHTML = '<div class="empty-state">Nenhum item cadastrado ainda.</div>';
@@ -716,23 +1242,32 @@
                 const div = document.createElement("div");
                 div.className = "catalog-item";
 
-                const encodedName = encodeURIComponent(item.name || "");
+                const name = document.createElement("span");
+                name.textContent = item.name || "";
+                const actions = document.createElement("div");
+                actions.className = "catalog-item-actions";
 
-                div.innerHTML = `
-                    <span>${escapeHtml(item.name)}</span>
-                    <div class="catalog-item-actions">
-                        <button class="catalog-action-btn"
-                            onclick="editCatalogItem('${activeCatalogStore}', ${item.id}, '${encodedName}')"
-                            aria-label="Editar item">
-                            ✏️
-                        </button>
-                        <button class="catalog-action-btn catalog-action-btn--delete"
-                            onclick="deleteCatalogItem('${activeCatalogStore}', ${item.id})"
-                            aria-label="Excluir item">
-                            🗑️
-                        </button>
-                    </div>
-                `;
+                const editButton = document.createElement("button");
+                editButton.type = "button";
+                editButton.className = "catalog-action-btn";
+                editButton.setAttribute("aria-label", `Editar ${item.name || "item"}`);
+                editButton.textContent = "✏️";
+                editButton.addEventListener("click", () => {
+                    const itemToEdit = { ...item, storeName: activeCatalogStore };
+                    closeCatalogModal();
+                    openCatalogConsultation(itemToEdit.name || "");
+                    openCatalogEditor(itemToEdit);
+                });
+
+                const deleteButton = document.createElement("button");
+                deleteButton.type = "button";
+                deleteButton.className = "catalog-action-btn catalog-action-btn--delete";
+                deleteButton.setAttribute("aria-label", `Excluir ${item.name || "item"}`);
+                deleteButton.textContent = "🗑️";
+                deleteButton.addEventListener("click", () => deleteCatalogItem(activeCatalogStore, item.id));
+
+                actions.append(editButton, deleteButton);
+                div.append(name, actions);
 
                 list.appendChild(div);
             });
@@ -837,6 +1372,12 @@
         document.getElementById("mealForm").addEventListener("submit", e => {
             e.preventDefault();
 
+            if (!hasSelectedMealFood()) {
+                updateMealSubmitButton();
+                document.querySelector("#baseSelectContainer .multi-select-button")?.focus();
+                return;
+            }
+
             const dateInput = document.getElementById("date");
             const mealTypeSelect = document.getElementById("mealType");
             const beverageSelect = document.getElementById("beverage");
@@ -900,6 +1441,8 @@
 
         // ================= DELETE MEAL =================
         function deleteMeal(id) {
+            if (!confirm("Deseja excluir esta refeição? Esta ação não pode ser desfeita.")) return;
+
             const tx = db.transaction("meals", "readwrite");
             tx.objectStore("meals").delete(id);
             tx.oncomplete = loadMeals;
@@ -954,7 +1497,9 @@
             activeMealFilter = filter;
             currentPage = 1;
             document.querySelectorAll('.chip-btn').forEach(btn => {
-                btn.classList.toggle('active', btn.textContent.trim().toLowerCase() === filter || (filter === 'all' && btn.textContent.trim().toLowerCase() === 'todas'));
+                const isActive = btn.textContent.trim().toLowerCase() === filter || (filter === 'all' && btn.textContent.trim().toLowerCase() === 'todas');
+                btn.classList.toggle('active', isActive);
+                btn.setAttribute("aria-pressed", isActive ? "true" : "false");
             });
             render();
         }
@@ -1314,42 +1859,43 @@
 
                 div.innerHTML = `
 
-                    <h3>${formatMealType(m.type)}</h3>
+                    <h3>${escapeHtml(formatMealType(m.type))}</h3>
 
-                    <p>📅 ${formatDate(m.date)}</p>
+                    <p>📅 ${escapeHtml(formatDate(m.date))}</p>
 
                     <hr>
 
-                    ${formatValues(m.base) ? `<p><strong>🍚 Base:</strong> ${formatValues(m.base)}</p>` : ""}
+                    ${formatValues(m.base) ? `<p><strong>🍚 Base:</strong> ${escapeHtml(formatValues(m.base))}</p>` : ""}
 
-                    ${formatValues(m.protein) ? `<p><strong>🥩 Proteína:</strong> ${formatValues(m.protein)}</p>` : ""}
+                    ${formatValues(m.protein) ? `<p><strong>🥩 Proteína:</strong> ${escapeHtml(formatValues(m.protein))}</p>` : ""}
 
-                    ${formatValues(m.carb) ? `<p><strong>🍝 Carboidrato:</strong> ${formatValues(m.carb)}</p>` : ""}
+                    ${formatValues(m.carb) ? `<p><strong>🍝 Carboidrato:</strong> ${escapeHtml(formatValues(m.carb))}</p>` : ""}
 
-                    ${formatValues(m.fruit) ? `<p><strong>🍌 Fruta:</strong> ${formatValues(m.fruit)}</p>` : ""}
+                    ${formatValues(m.fruit) ? `<p><strong>🍌 Fruta:</strong> ${escapeHtml(formatValues(m.fruit))}</p>` : ""}
 
-                    ${formatValues(m.salads) ? `<p><strong>🥗 Saladas e Legumes:</strong> ${formatValues(m.salads)}</p>` : ""}
+                    ${formatValues(m.salads) ? `<p><strong>🥗 Saladas e Legumes:</strong> ${escapeHtml(formatValues(m.salads))}</p>` : ""}
 
-                    ${m.beverage ? `<p><strong>🥤 Bebida:</strong> ${formatBeverage(m.beverage)}</p>` : ""}
+                    ${m.beverage ? `<p><strong>🥤 Bebida:</strong> ${escapeHtml(formatBeverage(m.beverage))}</p>` : ""}
 
-                    ${formatValues(m.freeMeal) ? `<p><strong>🍔 Refeição Livre:</strong> ${formatValues(m.freeMeal)}</p>` : ""}
+                    ${formatValues(m.freeMeal) ? `<p><strong>🍔 Refeição Livre:</strong> ${escapeHtml(formatValues(m.freeMeal))}</p>` : ""}
 
-                    <p><strong>⭐ Classificação:</strong> ${formatClassification(m.classification)}</p>
+                    <p><strong>⭐ Classificação:</strong> ${escapeHtml(formatClassification(m.classification))}</p>
 
-                    ${m.notes ? `<p><strong>📝 Observações:</strong><br>${m.notes}</p>` : ""}
+                    ${m.notes ? `<p><strong>📝 Observações:</strong><br>${escapeHtml(m.notes).replace(/\n/g, "<br>")}</p>` : ""}
 
                     <div class="grid" style="margin-top:10px; gap:8px;">
-                        <button class="catalog-action-btn"
-                            onclick="editMeal(${m.id})">
+                        <button type="button" class="catalog-action-btn" data-meal-edit>
                             ✏️ Editar
                         </button>
-                        <button class="delete-btn"
-                            onclick="deleteMeal(${m.id})">
+                        <button type="button" class="delete-btn" data-meal-delete>
                             🗑️ Excluir
                         </button>
                     </div>
 
                 `;
+
+                div.querySelector("[data-meal-edit]").addEventListener("click", () => editMeal(m.id));
+                div.querySelector("[data-meal-delete]").addEventListener("click", () => deleteMeal(m.id));
 
                 list.appendChild(div);
             });
@@ -1375,18 +1921,10 @@
 
             const today = getBrazilDateString();
 
-            let todayTotal = 0;
-            let todayCount = 0;
-
             meals.forEach(m => {
                 counts[m.classification]++;
                 total += scoreMap[m.classification] || 0;
                 count++;
-
-                if (m.date === today && (selectedMonth === "all" || selectedMonth === getCurrentMonth())) {
-                    todayTotal += scoreMap[m.classification] || 0;
-                    todayCount++;
-                }
             });
 
             for (let k in counts) {
@@ -1397,9 +1935,12 @@
             document.getElementById("score8020").innerText =
                 Math.round(avg * 100) + "%";
 
-            let todayAvg = todayCount ? (todayTotal / todayCount) : 0;
+            const todayMeals = allMeals.filter(meal => meal.date === today);
+            const todayTotal = todayMeals.reduce((sum, meal) => sum + (scoreMap[meal.classification] || 0), 0);
+            const todayCount = todayMeals.length;
+            const todayAvg = todayCount ? todayTotal / todayCount : 0;
 
-            let status = "-";
+            let status = "Sem registros hoje";
             if (todayCount) {
                 if (todayAvg >= 0.75) status = "Saudável 🔥";
                 else if (todayAvg >= 0.5) status = "Intermediário ⚖️";

@@ -3,43 +3,42 @@
 
 <head>
     <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
-    <title>🍽️ Gerenciador Alimentação</title>
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <meta name="theme-color" content="#F5F5F5">
+    <meta name="description" content="Acompanhe suas refeições, hábitos e evolução alimentar em um só lugar.">
+    <title>Meu Diário Alimentar</title>
 
     <link rel="stylesheet" href="styles.css">
-    <link href="https://cdn.jsdelivr.net/npm/@n8n/chat/dist/style.css" rel="stylesheet" />
-    <script type="module">
-    	import { createChat } from 'https://cdn.jsdelivr.net/npm/@n8n/chat/dist/chat.bundle.es.js';
-    
-    	createChat({
-    		webhookUrl: 'https://n8n.srv2047923.hstgr.cloud/webhook/ba03bd16-d403-4130-9149-d7164fc2ab90/chat'
-    	});
-    </script>
 </head>
 
 <body>
 
     <div class="container">
 
-        <div class="hero-card">
+        <header class="hero-card">
             <div class="hero-copy">
-                <h1>🍽️ Gerenciador Alimentação</h1>
-                <p>Seu painel para acompanhar sua alimentação diaria, semanal e mensal.</p>
+                <p class="hero-eyebrow">SEU ESPAÇO DE CUIDADO</p>
+                <h1>Meu diário alimentar</h1>
+                <p>Acompanhe seus hábitos com leveza. Registre suas refeições e observe sua evolução, um dia de cada vez.</p>
             </div>
 
             <div class="hero-actions">
-                <button type="button" onclick="openBackupModal()">⚙️ Configurações</button>
-                <button type="button" onclick="openCatalogModal('bases')">🍽️ Catálogo</button>
-                <button type="button"
-                    onclick="document.getElementById('mealSection').scrollIntoView({behavior:'smooth'})">➕ Registrar
-                    refeição</button>
+                <button type="button" onclick="openBackupModal()">Configurações</button>
+                <button type="button" onclick="openCatalogModal('bases')">Catálogo de alimentos</button>
+                <button type="button" onclick="document.getElementById('mealSection').scrollIntoView({behavior:'smooth'})">＋ Registrar refeição</button>
             </div>
-        </div>
+            <nav class="nav-pills" aria-label="Navegação principal">
+                <a class="nav-pill" href="#dashboardSection">Visão geral</a>
+                <a class="nav-pill" href="#mealSection">Registrar refeição</a>
+                <a class="nav-pill" href="#historySection">Histórico</a>
+                <button class="nav-pill nav-pill-button" type="button" onclick="openCatalogConsultation()">Consultar Catálogo</button>
+            </nav>
+        </header>
 
-        <div id="backupModal" class="modal" onclick="if (event.target.id === 'backupModal') closeBackupModal()">
+        <div id="backupModal" class="modal" role="dialog" aria-modal="true" aria-labelledby="backupModalTitle" onclick="if (event.target.id === 'backupModal') closeBackupModal()">
             <div class="modal-content">
                 <div class="modal-header">
-                    <h2 style="margin:0;">💾 Backup e Sincronização</h2>
+                    <h2 id="backupModalTitle">Backup e sincronização</h2>
                     <button type="button" class="modal-close" onclick="closeBackupModal()"
                         aria-label="Fechar">✕</button>
                 </div>
@@ -57,7 +56,7 @@
                         ⬆️ Importar Backup
                     </button>
 
-                    <button type="button" style="background:#e74c3c" onclick="resetDatabase()">
+                    <button type="button" class="danger-action" onclick="resetDatabase()">
                         🗑️ Resetar Banco de Dados
                     </button>
                 </div>
@@ -66,10 +65,10 @@
             </div>
         </div>
 
-        <div id="catalogModal" class="modal" onclick="if (event.target.id === 'catalogModal') closeCatalogModal()">
+        <div id="catalogModal" class="modal" role="dialog" aria-modal="true" aria-labelledby="catalogModalTitle" onclick="if (event.target.id === 'catalogModal') closeCatalogModal()">
             <div class="modal-content catalog-modal">
                 <div class="modal-header">
-                    <h2 style="margin:0;">🍽️ Catálogo</h2>
+                    <h2 id="catalogModalTitle">Catálogo de alimentos</h2>
                     <button type="button" class="modal-close" onclick="closeCatalogModal()"
                         aria-label="Fechar">✕</button>
                 </div>
@@ -89,14 +88,21 @@
                         onclick="changeCatalogTab('salads')">Saladas e Legumes</button>
                 </div>
 
+                <div class="catalog-search">
+                    <label for="catalogSearchInput">Buscar no catálogo completo</label>
+                    <input type="search" id="catalogSearchInput" placeholder="Digite parte do nome do alimento"
+                        aria-describedby="catalogSearchHelp" autocomplete="off">
+                    <p id="catalogSearchHelp">A busca considera todas as categorias e ignora acentos e maiúsculas.</p>
+                </div>
+                <div id="catalogSearchStatus" class="catalog-search-status" role="status" aria-live="polite"></div>
+
                 <div class="catalog-modal-body">
-                    <div style="display: flex; gap: 8px; margin-bottom: 10px;">
-                        <input type="text" id="catalogItemInput" placeholder="Nome do item"
-                            style="flex: 1; min-height: 42px; padding: 10px 12px; border-radius: 8px; border: 1px solid #d0d7de; font-size: 14px;">
+                    <div class="catalog-add-row">
+                        <input type="text" id="catalogItemInput" placeholder="Nome do item">
                         <button type="button" id="catalogItemAddButton" class="history-action-btn primary"
-                            style="padding: 10px 16px;">➕ Adicionar</button>
+                            >➕ Adicionar</button>
                         <button type="button" id="catalogItemCancelButton" class="history-action-btn secondary"
-                            onclick="cancelCatalogEdit()" style="display:none; padding: 10px 16px;">✕ Cancelar</button>
+                            onclick="cancelCatalogEdit()" style="display:none;">✕ Cancelar</button>
                     </div>
                     <div id="catalogList" class="catalog-list"></div>
                     <div id="catalogPagination" class="pagination"></div>
@@ -104,6 +110,69 @@
             </div>
         </div>
 
+        <div id="catalogConsultModal" class="modal" role="dialog" aria-modal="true" aria-labelledby="catalogConsultTitle" onclick="if (event.target.id === 'catalogConsultModal') closeCatalogConsultation()">
+            <section class="modal-content catalog-consult-modal">
+                <div class="modal-header">
+                    <div>
+                        <h2 id="catalogConsultTitle">Consultar Catálogo</h2>
+                        <p class="catalog-consult-intro">Pesquise e gerencie alimentos sem alterar as refeições já registradas.</p>
+                    </div>
+                    <button type="button" class="modal-close" onclick="closeCatalogConsultation()" aria-label="Fechar consulta do catálogo">✕</button>
+                </div>
+
+                <div class="catalog-search">
+                    <label for="catalogConsultSearch">Buscar alimento em todas as categorias</label>
+                    <input type="search" id="catalogConsultSearch" placeholder="Digite o nome ou parte dele"
+                        aria-describedby="catalogConsultSearchHelp" autocomplete="off">
+                    <p id="catalogConsultSearchHelp">A busca ignora acentos e diferenças entre maiúsculas e minúsculas.</p>
+                </div>
+                <p id="catalogConsultStatus" class="catalog-search-status" role="status" aria-live="polite"></p>
+                <p id="catalogConsultFeedback" class="catalog-consult-feedback" role="status" aria-live="polite"></p>
+
+                <form id="catalogEditForm" class="catalog-edit-form" hidden>
+                    <div class="catalog-editor-heading">
+                        <div>
+                            <h3>Editar alimento</h3>
+                            <p>Alterações no catálogo não reescrevem refeições anteriores.</p>
+                        </div>
+                        <button type="button" class="modal-close" id="catalogEditCancelIcon" aria-label="Cancelar edição">✕</button>
+                    </div>
+                    <input type="hidden" id="catalogEditId">
+                    <input type="hidden" id="catalogEditStore">
+                    <label for="catalogEditName">Nome do alimento</label>
+                    <input type="text" id="catalogEditName" maxlength="120" required>
+                    <label for="catalogEditDescription">Descrição <span class="label-hint">(opcional)</span></label>
+                    <textarea id="catalogEditDescription" rows="2" maxlength="500" placeholder="Informações adicionais sobre o alimento"></textarea>
+                    <label for="catalogEditCategory">Categoria</label>
+                    <select id="catalogEditCategory" required>
+                        <option value="bases">Bases</option>
+                        <option value="proteins">Proteínas</option>
+                        <option value="carbs">Carboidratos</option>
+                        <option value="freeMeals">Refeições livres</option>
+                        <option value="fruits">Frutas</option>
+                        <option value="salads">Saladas e legumes</option>
+                    </select>
+                    <div class="catalog-editor-actions">
+                        <button type="button" class="history-action-btn secondary" id="catalogEditCancelButton">Cancelar</button>
+                        <button type="submit" class="history-action-btn primary">Salvar alterações</button>
+                    </div>
+                    <p id="catalogEditError" class="catalog-form-error" role="alert"></p>
+                </form>
+
+                <div id="catalogDeleteConfirmation" class="catalog-confirmation" hidden>
+                    <h3 id="catalogDeleteTitle">Excluir alimento?</h3>
+                    <p id="catalogDeleteMessage"></p>
+                    <div class="catalog-editor-actions">
+                        <button type="button" class="history-action-btn secondary" id="catalogDeleteCancel">Manter alimento</button>
+                        <button type="button" class="history-action-btn danger-action" id="catalogDeleteConfirm">Excluir do catálogo</button>
+                    </div>
+                </div>
+
+                <div id="catalogConsultResults" class="catalog-consult-results" aria-live="polite"></div>
+            </section>
+        </div>
+
+        <main>
         <section class="section-card" id="dashboardSection">
             <div class="section-heading">
                 <div>
@@ -188,15 +257,15 @@
                 <div class="grid">
 
                     <div>
-                        <label for="baseSelectContainer"><strong>🍚 Base</strong> <span class="label-hint">(Selecione um
+                        <label id="baseSelectLabel"><strong>🍚 Base</strong> <span class="label-hint">(Selecione um
                                 ou mais itens)</span></label>
-                        <div class="multi-select-container" id="baseSelectContainer"></div>
+                        <div class="multi-select-container" id="baseSelectContainer" role="group" aria-labelledby="baseSelectLabel"></div>
                     </div>
 
                     <div>
-                        <label for="proteinSelectContainer"><strong>🥩 Proteína</strong> <span
+                        <label id="proteinSelectLabel"><strong>🥩 Proteína</strong> <span
                                 class="label-hint">(Selecione um ou mais itens)</span></label>
-                        <div class="multi-select-container" id="proteinSelectContainer"></div>
+                        <div class="multi-select-container" id="proteinSelectContainer" role="group" aria-labelledby="proteinSelectLabel"></div>
                     </div>
 
                 </div>
@@ -204,28 +273,28 @@
                 <div class="grid">
 
                     <div>
-                        <label for="carbSelectContainer"><strong>🍝 Carboidrato</strong> <span
+                        <label id="carbSelectLabel"><strong>🍝 Carboidrato</strong> <span
                                 class="label-hint">(Selecione um ou mais itens)</span></label>
-                        <div class="multi-select-container" id="carbSelectContainer"></div>
+                        <div class="multi-select-container" id="carbSelectContainer" role="group" aria-labelledby="carbSelectLabel"></div>
                     </div>
 
                     <div>
-                        <label for="freeSelectContainer"><strong>🍔 Refeição livre</strong> <span
+                        <label id="freeSelectLabel"><strong>🍔 Refeição livre</strong> <span
                                 class="label-hint">(Selecione um ou mais itens)</span></label>
-                        <div class="multi-select-container" id="freeSelectContainer"></div>
+                        <div class="multi-select-container" id="freeSelectContainer" role="group" aria-labelledby="freeSelectLabel"></div>
                     </div>
 
                 </div>
 
                 <div>
-                    <label for="fruitSelectContainer"><strong>🍌 Fruta</strong> <span class="label-hint">(Selecione um
+                        <label id="fruitSelectLabel"><strong>🍌 Fruta</strong> <span class="label-hint">(Selecione um
                             ou mais itens)</span></label>
-                    <div class="multi-select-container" id="fruitSelectContainer"></div>
+                        <div class="multi-select-container" id="fruitSelectContainer" role="group" aria-labelledby="fruitSelectLabel"></div>
                 </div>
 
                 <div>
-                    <label for="saladSelectContainer"><strong>🥗 Saladas e Legumes</strong> <span class="label-hint">(Selecione um ou mais itens)</span></label>
-                    <div class="multi-select-container" id="saladSelectContainer"></div>
+                    <label id="saladSelectLabel"><strong>🥗 Saladas e Legumes</strong> <span class="label-hint">(Selecione um ou mais itens)</span></label>
+                    <div class="multi-select-container" id="saladSelectContainer" role="group" aria-labelledby="saladSelectLabel"></div>
                 </div>
 
                 <label for="beverage"><strong>🥤 Ingeriu alguma bebida?</strong></label>
@@ -261,7 +330,8 @@
                     placeholder="Ex.: Pode ser informado quantidade(Ex.: 10g de Pasta de amendoim, 100g de filé de frango, 3 Esfihas) ou Almoço fora de casa, pouca fome."
                     rows="3" autocomplete="off" autocapitalize="sentences"></textarea>
 
-                <button id="saveMealButton">💾 Salvar refeição</button>
+                <button id="saveMealButton" type="submit" disabled aria-describedby="mealSelectionHint">💾 Salvar refeição</button>
+                <p id="mealSelectionHint" class="form-hint" role="status">Selecione ao menos um alimento para habilitar o cadastro.</p>
 
             </form>
         </section>
@@ -367,20 +437,26 @@
         <section class="section-card" id="historySection">
             <div class="section-heading">
                 <div>
-                    <h2>📊 Refeições do mês</h2>
-                    <span>Filtre e navegue pelo seu histórico com mais praticidade.</span>
+                    <h2>Seu histórico</h2>
+                    <span>Encontre refeições por período, classificação ou palavra-chave.</span>
                 </div>
+            </div>
+
+            <div class="stats-grid" aria-label="Resumo dos resultados visíveis">
+                <div class="stat-chip"><strong id="visibleMealsCount">0</strong><span>refeições encontradas</span></div>
+                <div class="stat-chip"><strong id="todayFeedCount">0</strong><span>refeições de hoje</span></div>
+                <div class="stat-chip"><strong id="latestMealLabel">—</strong><span>registro mais recente</span></div>
             </div>
 
             <div class="filter-bar">
                 <div class="filter-group">
-                    <button type="button" class="chip-btn active" onclick="setMealFilter('all')">Todas</button>
-                    <button type="button" class="chip-btn" onclick="setMealFilter('today')">Hoje</button>
-                    <button type="button" class="chip-btn" onclick="setMealFilter('week')">Semana</button>
-                    <button type="button" class="chip-btn" onclick="setMealFilter('month')">Mês</button>
+                    <button type="button" class="chip-btn active" aria-pressed="true" onclick="setMealFilter('all')">Todas</button>
+                    <button type="button" class="chip-btn" aria-pressed="false" onclick="setMealFilter('today')">Hoje</button>
+                    <button type="button" class="chip-btn" aria-pressed="false" onclick="setMealFilter('week')">Semana</button>
+                    <button type="button" class="chip-btn" aria-pressed="false" onclick="setMealFilter('month')">Mês</button>
                 </div>
                 <div class="filter-group">
-                    <select id="classificationFilter" onchange="setMealClassification(this.value)">
+                    <select id="classificationFilter" aria-label="Filtrar por classificação" onchange="setMealClassification(this.value)">
                         <option value="">Todas as classificações</option>
                         <option value="muitoBoa">Muito Bom</option>
                         <option value="muitoBoaFlexivel">Muito Bom Flexível</option>
@@ -389,7 +465,7 @@
                         <option value="podeMelhorar">Pode melhorar</option>
                         <option value="livre">Livre</option>
                     </select>
-                    <input id="mealSearch" class="subtle-input" type="text"
+                    <input id="mealSearch" class="subtle-input" type="search" aria-label="Buscar refeições"
                         placeholder="Buscar por refeição, tipo ou observação" oninput="handleMealSearch(event)">
                 </div>
             </div>
@@ -411,11 +487,12 @@
             <div id="dateFilterLabel" class="history-date-label"></div>
             <div id="list"></div>
         </section>
+        </main>
 
     </div>
 
     <footer class="app-footer" aria-label="Rodapé do aplicativo">
-        <span>V5.0.0</span>
+        <span>V6.0.0</span>
     </footer>
 
     <script src="script.js" defer></script>
